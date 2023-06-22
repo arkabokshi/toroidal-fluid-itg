@@ -81,26 +81,25 @@ PoloidalPlot = True
 
 if PoloidalPlot:
   
-  InnerRadius = 0.25
-  OuterRadius = 0.5
+    InnerRadius = 0.25
+    OuterRadius = 0.5
 
-
-  rr = np.linspace(InnerRadius,OuterRadius,length) 
-  pa = np.linspace(0.0,2.0*pi,NumTheta)
-  yy = np.zeros((NumTheta,length))
-  xx = np.zeros((NumTheta,length))
-  for jj in range(NumTheta):
-	yy[jj,:] = rr * sin(pa[jj])
-	xx[jj,:] = rr * cos(pa[jj])
+    rr = np.linspace(InnerRadius,OuterRadius,length) 
+    pa = np.linspace(0.0,2.0*pi,NumTheta)
+    yy = np.zeros((NumTheta,length))
+    xx = np.zeros((NumTheta,length))
+    for jj in range(NumTheta):
+        yy[jj,:] = rr * sin(pa[jj])
+        xx[jj,:] = rr * cos(pa[jj])
   
-  levels = np.linspace(np.min(Potential),np.max(Potential),50)
-  fig4 = figure(4,figsize=(4,4))
-  ax = fig4.add_subplot(1,1,1)
-  ax.set_aspect('equal')
-  contourf(xx,yy,Potential,levels=levels,cmap=cm.jet)
-  xticks(fontsize=20.0,fontname='serif')
-  yticks(fontsize=20.0,fontname='serif')
-  ylabel('$Z(m)$',fontsize=25.0)
-  xlabel('$R(m)$',fontsize=25.0,fontname='normal')
-  fig4.savefig('isolatedpotential.jpg',format='jpeg',dpi=250,bbox_inches='tight')
-  show()
+    levels = np.linspace(np.min(Potential),np.max(Potential),50)
+    fig4 = figure(4,figsize=(4,4))
+    ax = fig4.add_subplot(1,1,1)
+    ax.set_aspect('equal')
+    contourf(xx,yy,Potential,levels=levels,cmap=cm.jet)
+    xticks(fontsize=20.0,fontname='serif')
+    yticks(fontsize=20.0,fontname='serif')
+    ylabel('$Z(m)$',fontsize=25.0)
+    xlabel('$R(m)$',fontsize=25.0,fontname='normal')
+    fig4.savefig('isolatedpotential.jpg',format='jpeg',dpi=250,bbox_inches='tight')
+    show()
