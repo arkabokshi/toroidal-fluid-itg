@@ -43,7 +43,7 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 						RunTime = 9000.0_dp,							&
 						GenIso_Transition = 200.0_dp,						&	! Useful for transition studies, eg. Fig 7 in paper
 						Init_gammaE = -5.0e-3_dp,						&
-						!Final_gammaE = 5.0e-3_dp,						&
+						Final_gammaE = 5.0e-3_dp,						&
 						Quad_gammaE  = 1.0e-4_dp							! Effectively k1/n term in Fig. 6
 
 INTEGER,PARAMETER::				NumSteps = INT(RunTime/dt),						&
