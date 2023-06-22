@@ -40,11 +40,11 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 						nqp = ktheta * shear,							&
 
 						dt = 0.1_dp,								&	! Time-step for RK4
-						RunTime = 9000.0_dp,							&
+						RunTime = 1000.1_dp,							&
 						GenIso_Transition = 200.0_dp,						&	! Useful for transition studies, eg. Fig 7 in paper
 						Init_gammaE = -5.0e-3_dp,						&
 						Final_gammaE = 5.0e-3_dp,						&
-						Quad_gammaE  = 1.0e-4_dp							! Effectively k1/n term in Fig. 6
+						Quad_gammaE  = 0.0e-4_dp							! Effectively k1/n term in Fig. 6
 
 INTEGER,PARAMETER::				NumSteps = INT(RunTime/dt),						&
 						PtDensity = 10,								&	! Determines domain in radial coordinate xx
