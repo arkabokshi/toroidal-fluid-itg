@@ -51,9 +51,9 @@ for tt in range(NumFiles):
 # --------------------------- #
 # Routine for plotting phi(x) #
 # --------------------------- #
-print '------------------------------------'
-print 'Reconstructing poloidal potential...'
-print '------------------------------------'
+print( '------------------------------------' )
+print( 'Reconstructing poloidal potential...' )
+print( '------------------------------------' )
 
 NumTheta = 720
 
@@ -65,7 +65,7 @@ ImagLocalPotential = np.zeros(Length)
 dplot = 1
 
 for tt in range(0,NumFiles,dplot):
-  print 'Timeslice:',tt+1,'/',NumFiles
+  print('Timeslice:',tt+1,'/',NumFiles)
 
   for jj in range(NumTheta):
 
@@ -151,7 +151,7 @@ for tt in range(0,NumFiles,dplot):
 
     fig.savefig('./images/'+str(tt)+'.jpg',format='jpeg',dpi=250,bbox_inches='tight')
     
-    print 'Saving:',tt+1,'/',NumFiles
+    print( 'Saving:',tt+1,'/',NumFiles )
     plt.clf()
     
 

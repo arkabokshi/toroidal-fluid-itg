@@ -41,19 +41,19 @@ gamma_max = np.max( Globalgamma )
 gamma_max_loc = where( Globalgamma==gamma_max )
 #gamma_max_loc = (array([25125]),)
 
-print 'Max(gamma) loc:',gamma_max_loc
-print 'Gamma at gamma_max:', Globalgamma[gamma_max_loc]
-print 'omega at gamma_max:', Globalomega[gamma_max_loc]
-print 'theta at gamma_max:', ThetaMaxima[gamma_max_loc]
-print 'gamma_E at gamma_max:', gammaE_t[gamma_max_loc]
-print ''
+print('Max(gamma) loc:',gamma_max_loc)
+print('Gamma at gamma_max:', Globalgamma[gamma_max_loc])
+print('omega at gamma_max:', Globalomega[gamma_max_loc])
+print('theta at gamma_max:', ThetaMaxima[gamma_max_loc])
+print('gamma_E at gamma_max:', gammaE_t[gamma_max_loc])
+print('')
 
 #print Globalomega[theta0]
 #print Globalgamma[theta0]
   
-print 'Mean [ gamma ] :' , mean(Globalgamma[55000:60000])
-print 'Mean [ omega ] :' , mean(Globalomega[55000:60000])
-print 'Mean [ theta ] :' , mean(ThetaMaxima[55000:60000])
+print('Mean [ gamma ] :' , mean(Globalgamma[55000:60000]))
+print('Mean [ omega ] :' , mean(Globalomega[55000:60000]))
+print('Mean [ theta ] :' , mean(ThetaMaxima[55000:60000]))
 
 
 # -------- #

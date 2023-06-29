@@ -29,7 +29,7 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 
 						etac  =  1062.5_dp,							&
 						tau   =  1.0_dp,							&
-						epsilonn  = 0.04_dp,							&
+						epsilonn  = 0.08_dp,							&
 						delta_m   = 0.0_dp,							&	! I don't think this is used anywhere...
 
 						b = krhoi**2,								&
@@ -40,15 +40,15 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 						nqp = ktheta * shear,							&
 
 						dt = 0.1_dp,								&	! Time-step for RK4
-						RunTime = 1000.1_dp,							&
-						GenIso_Transition = 200.0_dp,						&	! Useful for transition studies, eg. Fig 7 in paper
-						Init_gammaE = -5.0e-3_dp,						&
-						Final_gammaE = 5.0e-3_dp,						&
+						RunTime = 500.1_dp,							&
+						GenIso_Transition = 0.0_dp,						&	! Useful for transition studies, eg. Fig 7 in paper
+						Init_gammaE = 0.0e-3_dp,						&
+						Final_gammaE =0.0e-3_dp,						&
 						Quad_gammaE  = 0.0e-4_dp							! Effectively k1/n term in Fig. 6
 
 INTEGER,PARAMETER::				NumSteps = INT(RunTime/dt),						&
 						PtDensity = 10,								&	! Determines domain in radial coordinate xx
-						DelPrint  = 10000,							&	! How frequently to output to file
+						DelPrint  = 100,							&	! How frequently to output to file
 						NumTheta = 360									! Points in poloidal direction
 					
 REAL(KIND=dp)::					FlowOnOff = 1.0_dp,							&
@@ -79,8 +79,8 @@ COMPLEX*16,DIMENSION(length,NumModes)::		FULLtoinvert
 
 
 LOGICAL,PARAMETER::				restart  = .FALSE.,							&	! If restarting simulation, define location of 
-						with_MPI = .TRUE.								! FinalFields.txt from previous run
-
+						with_MPI = .TRUE.,                                                      &! FinalFields.txt from previous run
+                                                noiseStart = .TRUE.
 
 END MODULE inputdata
 

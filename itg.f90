@@ -4,7 +4,7 @@ ONLY:m0,length,dt,NumSteps,RunTime,xx,dp,NumModes,InitialMode,FinalMode,GenIso_T
     eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,		&
     MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,			&
     ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta,	&
-    Quad_gammaE, TaylorFlow
+    Quad_gammaE, TaylorFlow, noiseStart
 IMPLICIT NONE
 INCLUDE 'mpif.h'
 EXTERNAL Evolve,OdeSolver
@@ -25,6 +25,7 @@ DOUBLE PRECISION				::   ABS_PHIm_t0, ABS_PHIm_t1, ABS_Gm_t1, theta
 DOUBLE PRECISION, DIMENSION(NumTheta)		::   ABS_Potential
 DOUBLE PRECISION, PARAMETER			::   pi = ATAN(1.0_dp) * 4.0_dp
 DOUBLE COMPLEX, DIMENSION(length)		::   ComplexPotential
+REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 
 ! ---------------- !
 ! Initialising MPI !
@@ -61,6 +62,16 @@ DOUBLE COMPLEX, DIMENSION(length)		::   ComplexPotential
     delm = DBLE( InitialMode-m0-1+mode )
     u0(:length,mode) = ((1)**mode) * Amp * DCMPLX( EXP(-mu*((xx-delm)**2 )),EXP(-mu*((xx-delm)**2)) )
   END DO
+
+  IF (noiseStart) THEN
+      CALL RANDOM_NUMBER(ureal)
+      CALL RANDOM_NUMBER(uimag)
+      u0(:length,1) = Amp * DCMPLX( ureal,uimag )
+      DO mode = 2,NumModes
+          u0(:length,mode) = u0(:length,mode-1) * ci * mode/NumModes
+      END DO
+  END IF
+
   u0 ( 1*length+1 : 2*length, : ) = u0 ( :length , : ) * Omega_0**1
   u0 ( 2*length+1 : 3*length, : ) = u0 ( :length , : ) * Omega_0**2
 
