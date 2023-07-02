@@ -4,7 +4,7 @@ ONLY:m0,length,dt,NumSteps,RunTime,xx,dp,NumModes,InitialMode,FinalMode,GenIso_T
     eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,		&
     MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,			&
     ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta,	&
-    Quad_gammaE, TaylorFlow, noiseStart
+    Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima
 IMPLICIT NONE
 INCLUDE 'mpif.h'
 EXTERNAL Evolve,OdeSolver
@@ -191,7 +191,7 @@ REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 
 	  END DO
 
-
+	IF (calcThetaMaxima) THEN
 	  ! (3)
 	  ! Max [ Theta ]	  
 	  DO jj = 1,NumTheta
@@ -203,9 +203,12 @@ REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 			END DO
 		ABS_Potential(jj) = maxval( ABS(ComplexPotential) )
 	  END DO
-
-
 	  ThetaMaxima(TimeStep) = 2d0 * DBLE( maxloc(ABS_Potential,DIM=1) ) / DBLE(NumTheta-1)	! In units of pi radians
+	ELSE
+	  ThetaMaxima(TimeStep) = 0
+	END IF
+
+
 	  GlobalOmega(TimeStep) = SQRT( ABS_Gm_t1 / ABS_PHIm_t1 )
 	  GlobalGamma(TimeStep) = ( DLOG(ABS_PHIm_t1)-DLOG(ABS_PHIm_t0) ) / dt		! NOTE: Not square-rooting, so factor 2 in analysisV2.py needed
 

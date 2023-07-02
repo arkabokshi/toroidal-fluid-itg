@@ -81,6 +81,7 @@ COMPLEX*16,DIMENSION(length,NumModes)::		FULLtoinvert
 LOGICAL,PARAMETER::				restart  = .FALSE.,							&	! If restarting simulation, define location of 
 						with_MPI = .TRUE.,                                                      &! FinalFields.txt from previous run
                                                 noiseStart = .TRUE.
+						calcThetaMaxima = .false.
 
 END MODULE inputdata
 
