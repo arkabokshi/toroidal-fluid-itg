@@ -4,7 +4,7 @@ ONLY:m0,length,dt,NumSteps,RunTime,xx,dp,NumModes,InitialMode,FinalMode,GenIso_T
     eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,		&
     MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,			&
     ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta,	&
-    Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima
+    Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg
 IMPLICIT NONE
 INCLUDE 'mpif.h'
 EXTERNAL Evolve,OdeSolver
@@ -17,7 +17,8 @@ DOUBLE COMPLEX, DIMENSION( length )             ::   ax,bx,cx
 REAL(KIND=dp) , DIMENSION( NumSteps )           ::   gammaE_t = -1.0_dp
 DOUBLE COMPLEX					::   Omega_0
 
-INTEGER						::   TimeStep,mode,q_m,NumFiles,ii,jj,mm,MaxTheta
+INTEGER						::   TimeStep,mode,q_m,NumFiles,ii,jj,mm,MaxTheta, &
+						     begtime, endtime
 REAL(KIND=dp)					::   mu,delm,delx,t0,t1,Amp,tt,wm,gm,RealMax,ImagMax
  CHARACTER(LEN=20)				::   t
 
@@ -26,6 +27,7 @@ DOUBLE PRECISION, DIMENSION(NumTheta)		::   ABS_Potential
 DOUBLE PRECISION, PARAMETER			::   pi = ATAN(1.0_dp) * 4.0_dp
 DOUBLE COMPLEX, DIMENSION(length)		::   ComplexPotential
 REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
+REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 
 ! ---------------- !
 ! Initialising MPI !
@@ -132,6 +134,7 @@ REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 ! Evolving system in time !
 ! ----------------------- !
 
+  old_gamma = -1.0
   NumFiles = 1
   t0 = MPI_WTIME()
   
@@ -218,7 +221,6 @@ REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 
 	  IF (MyRank.EQ.0) THEN
 
-	      PRINT*, TimeStep*dt,'/',NumSteps*dt
 	  
 	      IF ( MOD(TimeStep,DelPrint).EQ.0 ) THEN
 
@@ -266,6 +268,22 @@ REAL(KIND=dp), DIMENSION( length)   ::   ureal, uimag
 
 
 	  CALL MPI_BARRIER(MPI_COMM_WORLD,ierror)
+
+	IF (MOD(TimeStep,navg).EQ.0) THEN
+
+		! take mean over window with width navg
+		begtime = TimeStep+1 - navg
+		endtime = TimeStep
+		new_gamma = SUM( GlobalGamma(begtime:endtime) ) / navg
+		delta_gamma = ABS(new_gamma-old_gamma) / ABS(new_gamma)
+		old_gamma = new_gamma
+
+	        PRINT*, TimeStep*dt,'/',NumSteps*dt
+		PRINT*, delta_gamma, begtime, endtime
+
+		IF (delta_gamma .LE. gammatol) EXIT
+
+	END IF
 
 
   END DO

@@ -40,7 +40,8 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 						nqp = ktheta * shear,							&
 
 						dt = 0.1_dp,								&	! Time-step for RK4
-						RunTime = 500.1_dp,							&
+						RunTime = 2000.1_dp,							&
+						gammatol = 1e-4,							&
 						GenIso_Transition = 0.0_dp,						&	! Useful for transition studies, eg. Fig 7 in paper
 						Init_gammaE = 0.0e-3_dp,						&
 						Final_gammaE =0.0e-3_dp,						&
@@ -48,8 +49,9 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 
 INTEGER,PARAMETER::				NumSteps = INT(RunTime/dt),						&
 						PtDensity = 10,								&	! Determines domain in radial coordinate xx
-						DelPrint  = 100,							&	! How frequently to output to file
-						NumTheta = 360									! Points in poloidal direction
+						DelPrint  = 1000,							&	! How frequently to output to file
+						NumTheta = 360,								&	! Points in poloidal direction
+						navg = 100
 					
 REAL(KIND=dp)::					FlowOnOff = 1.0_dp,							&
 						ShearingRate,								&
@@ -80,7 +82,7 @@ COMPLEX*16,DIMENSION(length,NumModes)::		FULLtoinvert
 
 LOGICAL,PARAMETER::				restart  = .FALSE.,							&	! If restarting simulation, define location of 
 						with_MPI = .TRUE.,                                                      &! FinalFields.txt from previous run
-                                                noiseStart = .TRUE.
+                                                noiseStart = .TRUE.,							&
 						calcThetaMaxima = .false.
 
 END MODULE inputdata
