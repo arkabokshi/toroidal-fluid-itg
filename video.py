@@ -100,9 +100,6 @@ for jj in range(NumTheta):
       xx[jj,:] = rr * cos(pa[jj])
 
 
-yll = 0.68
-yul = 0.76
-
 fig = plt.figure(figsize=(16,5),dpi=1000)
 #plt.hold(False)
 ims = []
@@ -113,6 +110,8 @@ for tt in range(0,NumFiles,dplot):
     levels = np.linspace(np.min(Potential[:,:,tt]),np.max(Potential[:,:,tt]),50)
     timepoint = DelPrint * tt * dt / 1.0e4
 
+    yll = Globalgamma[-1] * 0.90
+    yul = Globalgamma[-1] * 1.10
     
     plt.subplot( 1,3,2 )
     
@@ -128,7 +127,7 @@ for tt in range(0,NumFiles,dplot):
     for i in range(20,60):
       plot(time,mode_gamma[i,:],linewidth=0.5)
     plot(time,Globalgamma,'y--',linewidth=2.5)
-    plot([0.0,time[-1]],[0.743984083872,0.743984083872],'k--',linewidth=1.5)
+    #plot([0.0,time[-1]],[0.743984083872,0.743984083872],'k--',linewidth=1.5)
     plot([timepoint,timepoint],[yll,yul],'k',linewidth=1.5)
 #    ylabel('$\gamma$',fontsize=15.0)
     xlabel('Time (ms)',fontsize=15.0,fontname='serif',visible=True)
