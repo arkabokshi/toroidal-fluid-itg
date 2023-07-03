@@ -24,12 +24,12 @@ REAL(KIND=dp),PARAMETER::			MinRad = 0.5_dp,							&
 						krhoi  =  0.2,								&	! Parameters explained in the paper
 						shear  =  25.0_dp,							&	! Bokshi PPCF 2016
 						CURV   =  1.0_dp,							&
-						etag   =  2.0_dp,							&
+						etag   =  2.0_dp,							&	! [2,5]
 						qedge  =  3.45_dp,							&
 
 						etac  =  1062.5_dp,							&
 						tau   =  1.0_dp,							&
-						epsilonn  = 0.08_dp,							&
+						epsilonn  = 0.01_dp,							&	! [0.01,0.02,0.03,0.04,0.08]
 						delta_m   = 0.0_dp,							&	! I don't think this is used anywhere...
 
 						b = krhoi**2,								&
@@ -82,7 +82,7 @@ COMPLEX*16,DIMENSION(length,NumModes)::		FULLtoinvert
 
 LOGICAL,PARAMETER::				restart  = .FALSE.,							&	! If restarting simulation, define location of 
 						with_MPI = .TRUE.,                                                      &! FinalFields.txt from previous run
-                                                noiseStart = .TRUE.,							&
+                                                noiseStart = .false.,							&
 						calcThetaMaxima = .false.
 
 END MODULE inputdata
