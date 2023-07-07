@@ -81,9 +81,9 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
   
   IF (restart) THEN
     
-      OPEN (5,FILE=TRIM(runpath)//'/FinalFields.txt',ACTION='READ')
+      OPEN (5,FILE=TRIM(runpath)//'/FinalFields.dat',FORM='unformatted')
       DO mode=1,NumModes
-	READ (5,*) u0(:,mode)
+	READ (5) u0(:,mode)
       END DO
       CLOSE (5)
 
@@ -114,17 +114,17 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 	OPEN (5,FILE=TRIM(runpath)//'/parameters.txt')
 	WRITE (5,*) NumSteps,dt,length,NumModes,InitialMode,FinalMode,tau
 	CLOSE (5)
-	OPEN (5,FILE=TRIM(runpath)//'/xx.txt',ACTION='WRITE')
+	OPEN (5,FILE=TRIM(runpath)//'/xx.txt')
 	WRITE (5,*) xx
 	CLOSE (5)
-	OPEN (5,FILE=TRIM(runpath)//'/profiles.txt',ACTION='WRITE')
-	WRITE (5,*) eta,qprofile,sigma,Final_gammaE*xx + Quad_gammaE*(xx**2)
+	OPEN (5,FILE=TRIM(runpath)//'/profiles.dat',FORM='unformatted')
+	WRITE (5) eta,qprofile,sigma,Final_gammaE*xx + Quad_gammaE*(xx**2)
 	CLOSE (5)
-	OPEN (5,FILE=TRIM(runpath)//'/100000.txt',ACTION='WRITE')
-	WRITE (5,*) REAL( u0(:length,:) )
+	OPEN (5,FILE=TRIM(runpath)//'/100000.dat',FORM='unformatted')
+	WRITE (5) REAL( u0(:length,:) )
 	CLOSE (5)
-	OPEN (5,FILE=TRIM(runpath)//'/200000.txt',ACTION='WRITE')
-	WRITE (5,*) AIMAG( u0(:length,:) )
+	OPEN (5,FILE=TRIM(runpath)//'/200000.dat',FORM='unformatted')
+	WRITE (5) AIMAG( u0(:length,:) )
 	CLOSE (5)
 
   END IF
@@ -229,29 +229,29 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 		    NumFiles = NumFiles + 1
 		    WRITE(t,'(I5.5)') TimeStep
 
-		    OPEN (5,FILE=TRIM(runpath)//'/1'//TRIM(t)//'.txt',ACTION='WRITE')
-		    WRITE (5,*) REAL(u1(:length,:))
+		    OPEN (5,FILE=TRIM(runpath)//'/1'//TRIM(t)//'.dat',FORM='unformatted')
+		    WRITE (5) REAL(u1(:length,:))
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/2'//TRIM(t)//'.txt',ACTION='WRITE')
-		    WRITE (5,*) AIMAG(u1(:length,:))
+		    OPEN (5,FILE=TRIM(runpath)//'/2'//TRIM(t)//'.dat',FORM='unformatted')
+		    WRITE (5) AIMAG(u1(:length,:))
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/frequency.txt',ACTION='WRITE')
-		    WRITE (5,*) REAL(Omega_t)
+		    OPEN (5,FILE=TRIM(runpath)//'/frequency.dat',FORM='unformatted')
+		    WRITE (5) REAL(Omega_t)
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/growthrate.txt',ACTION='WRITE')
-		    WRITE (5,*) AIMAG(Omega_t)
+		    OPEN (5,FILE=TRIM(runpath)//'/growthrate.dat',FORM='unformatted')
+		    WRITE (5) AIMAG(Omega_t)
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/gammaE_t.txt',ACTION='WRITE')
-		    WRITE (5,*) gammaE_t
+		    OPEN (5,FILE=TRIM(runpath)//'/gammaE_t.dat',FORM='unformatted')
+		    WRITE (5) gammaE_t
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/globalgamma.txt',ACTION='WRITE')
-		    WRITE (5,*) GlobalGamma
+		    OPEN (5,FILE=TRIM(runpath)//'/globalgamma.dat',FORM='unformatted')
+		    WRITE (5) GlobalGamma
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/globalomega.txt',ACTION='WRITE')
-		    WRITE (5,*) GlobalOmega
+		    OPEN (5,FILE=TRIM(runpath)//'/globalomega.dat',FORM='unformatted')
+		    WRITE (5) GlobalOmega
 		    CLOSE (5)
-		    OPEN (5,FILE=TRIM(runpath)//'/thetamaxima.txt',ACTION='WRITE')
-		    WRITE (5,*) ThetaMaxima
+		    OPEN (5,FILE=TRIM(runpath)//'/thetamaxima.dat',FORM='unformatted')
+		    WRITE (5) ThetaMaxima
 		    CLOSE (5)
 
 	      END IF
@@ -297,37 +297,37 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 
   IF (MyRank.EQ.0) THEN
   
-      OPEN (5,FILE=TRIM(runpath)//'/videoparam.txt',ACTION='WRITE')
+      OPEN (5,FILE=TRIM(runpath)//'/videoparam.txt')
       WRITE (5,*) NumFiles,DelPrint
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/realfieldend.txt',ACTION='WRITE')
-      WRITE (5,*) REAL(u1(:length,:))
+      OPEN (5,FILE=TRIM(runpath)//'/realfieldend.dat',FORM='unformatted')
+      WRITE (5) REAL(u1(:length,:))
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/imagfieldend.txt',ACTION='WRITE')
-      WRITE (5,*) AIMAG(u1(:length,:))
+      OPEN (5,FILE=TRIM(runpath)//'/imagfieldend.dat',FORM='unformatted')
+      WRITE (5) AIMAG(u1(:length,:))
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/frequency.txt',ACTION='WRITE')
-      WRITE (5,*) REAL(Omega_t)
+      OPEN (5,FILE=TRIM(runpath)//'/frequency.dat',FORM='unformatted')
+      WRITE (5) REAL(Omega_t)
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/growthrate.txt',ACTION='WRITE')
-      WRITE (5,*) AIMAG(Omega_t)
+      OPEN (5,FILE=TRIM(runpath)//'/growthrate.dat',FORM='unformatted')
+      WRITE (5) AIMAG(Omega_t)
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/gammaE_t.txt',ACTION='WRITE')
-      WRITE (5,*) gammaE_t
+      OPEN (5,FILE=TRIM(runpath)//'/gammaE_t.dat',FORM='unformatted')
+      WRITE (5) gammaE_t
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/globalgamma.txt',ACTION='WRITE')
-      WRITE (5,*) GlobalGamma
+      OPEN (5,FILE=TRIM(runpath)//'/globalgamma.dat',FORM='unformatted')
+      WRITE (5) GlobalGamma
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/globalomega.txt',ACTION='WRITE')
-      WRITE (5,*) GlobalOmega
+      OPEN (5,FILE=TRIM(runpath)//'/globalomega.dat',FORM='unformatted')
+      WRITE (5) GlobalOmega
       CLOSE (5)
-      OPEN (5,FILE=TRIM(runpath)//'/thetamaxima.txt',ACTION='WRITE')
-      WRITE (5,*) ThetaMaxima
+      OPEN (5,FILE=TRIM(runpath)//'/thetamaxima.dat',FORM='unformatted')
+      WRITE (5) ThetaMaxima
       CLOSE (5)
 
-      OPEN (5,FILE=TRIM(runpath)//'/FinalFields.txt',ACTION='WRITE')
+      OPEN (5,FILE=TRIM(runpath)//'/FinalFields.dat',FORM='unformatted')
       DO mode=1,NumModes
-	WRITE (5,*)  u1(:,mode)
+	WRITE (5)  u1(:,mode)
       END DO
 
 

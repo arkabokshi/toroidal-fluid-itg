@@ -85,7 +85,7 @@ LOGICAL,PARAMETER::				restart  = .FALSE.,							&	! If restarting simulation, d
                                                 noiseStart = .false.,							&
 						calcThetaMaxima = .false.
 
-CHARACTER(20)::					runpath = 'run_2'
+CHARACTER(20)::					runpath = 'run_3'
 
 END MODULE inputdata
 
