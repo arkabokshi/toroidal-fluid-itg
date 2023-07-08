@@ -8,15 +8,17 @@ import math
 # Loading data #
 # ------------ #
 
+runpath = './run_3'
+
 tstamp = input('Enter last 5-digits of time-slice:')
 tstamp = int(tstamp)
 
-param = loadtxt('./parameters.txt')
-xx = loadtxt('./xx.txt')
-realfieldstart = loadtxt('./100000.txt')
-imagfieldstart = loadtxt('./200000.txt')
-realfieldend = loadtxt('./'+str(100000+tstamp)+'.txt')
-imagfieldend = loadtxt('./'+str(200000+tstamp)+'.txt')
+param = loadtxt(runpath+'/parameters.txt')
+xx = loadtxt(runpath+'/xx.txt')
+realfieldstart = np.fromfile(runpath+'/100000.dat')
+imagfieldstart = np.fromfile(runpath+'/200000.dat')
+realfieldend = np.fromfile(runpath+'/'+str(100000+tstamp)+'.dat')
+imagfieldend = np.fromfile(runpath+'/'+str(200000+tstamp)+'.dat')
 
 ns = param[0]
 dt = param[1]
