@@ -14,7 +14,7 @@ runpath = './run_3'
 parameters = np.loadtxt(runpath+'/parameters.txt')
 videoparam = np.loadtxt(runpath+'/videoparam.txt')
 
-xx = loadtxt(runpath+'/xx.txt')
+xx = np.fromfile(runpath+'/xx.dat')
 growthrate = np.fromfile(runpath+'/growthrate.dat')
 frequency  = np.fromfile(runpath+'/frequency.dat')
 Globalgamma = np.fromfile(runpath+'/globalgamma.dat')
