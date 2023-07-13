@@ -114,7 +114,7 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 	OPEN (5,FILE=TRIM(runpath)//'/parameters.txt')
 	WRITE (5,*) NumSteps,dt,length,NumModes,InitialMode,FinalMode,tau
 	CLOSE (5)
-	OPEN (5,FILE=TRIM(runpath)//'/xx.dat',FORM='unformatted',ACCESS='stream')
+	OPEN (5,FILE=TRIM(runpath)//'/xx.txt')
 	WRITE (5,*) xx
 	CLOSE (5)
 	OPEN (5,FILE=TRIM(runpath)//'/profiles.dat',FORM='unformatted',ACCESS='stream')
