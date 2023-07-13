@@ -53,6 +53,12 @@ REAL(KIND=dp)					::   old_gamma, new_gamma, delta_gamma
 
   eta = etag * ( 1.0_dp - etac * (xx/nqp)**2 )
 
+!--------------------------!
+! Create runpath directory !
+!--------------------------!
+
+  CALL SYSTEM('mkdir ' // runpath)
+
 ! ------------------- !
 ! Initialising fields !
 ! ------------------- !
