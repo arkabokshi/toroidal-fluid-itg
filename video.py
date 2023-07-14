@@ -8,17 +8,18 @@ import matplotlib.animation as animation
 # ------------ #
 # Loading data #
 # ------------ #
-parameters = np.loadtxt('parameters.txt')
-videoparam = np.loadtxt('videoparam.txt')
 
-xx = loadtxt('./xx.txt')
-growthrate = loadtxt('./growthrate.txt')
-frequency  = loadtxt('./frequency.txt')
-#PolPotOmega = loadtxt('./polpotomega.txt')
-#PolPotGamma = loadtxt('./polpotgamma.txt')
-Globalgamma = loadtxt('./globalgamma.txt')
+runpath = './run_3'
+
+parameters = np.loadtxt(runpath+'/parameters.txt')
+videoparam = np.loadtxt(runpath+'/videoparam.txt')
+
+xx = np.loadtxt(runpath+'/xx.txt')
+growthrate = np.fromfile(runpath+'/growthrate.dat')
+frequency  = np.fromfile(runpath+'/frequency.dat')
+Globalgamma = np.fromfile(runpath+'/globalgamma.dat')
 Globalgamma = Globalgamma / 2.0
-gammaE_t = loadtxt('./gammaE_t.txt')
+gammaE_t = np.fromfile(runpath+'/gammaE_t.dat')
 
 NumSteps = int(parameters[0])
 dt = parameters[1]
@@ -41,9 +42,9 @@ ImagData = np.zeros((NumModes,Length,NumFiles))
 
 for tt in range(NumFiles):
   tstamp = DelPrint * tt
-  TempData = np.loadtxt(str(100000+tstamp)+'.txt')
+  TempData = np.fromfile(runpath+'/'+str(100000+tstamp)+'.dat')
   RealData[:,:,tt] = np.reshape(TempData,(NumModes,Length)) 
-  TempData = np.loadtxt(str(200000+tstamp)+'.txt')
+  TempData = np.fromfile(runpath+'/'+str(200000+tstamp)+'.dat')
   ImagData[:,:,tt] = np.reshape(TempData,(NumModes,Length)) 
  
   

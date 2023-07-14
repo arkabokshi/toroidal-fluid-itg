@@ -8,17 +8,20 @@ from numpy.fft import *
 # ------------ #
 # Loading data #
 # ------------ #
-param = loadtxt('./parameters.txt')
-xx = loadtxt('./xx.txt')
-growthrate = loadtxt('./growthrate.txt')
-frequency  = loadtxt('./frequency.txt')
-gammaE_t = loadtxt('./gammaE_t.txt')
 
-ThetaMaxima = loadtxt('./thetamaxima.txt')
-GlobalOmega = loadtxt('./globalomega.txt')
-Globalgamma = loadtxt('./globalgamma.txt')
+runpath = './run_3'
+
+param = np.loadtxt(runpath+'/parameters.txt')
+xx = np.loadtxt(runpath+'/xx.txt')
+growthrate = np.fromfile(runpath+'/growthrate.dat')
+frequency  = np.fromfile(runpath+'/frequency.dat')
+gammaE_t = np.fromfile(runpath+'/gammaE_t.dat')
+
+ThetaMaxima = np.fromfile(runpath+'/thetamaxima.dat')
+GlobalOmega = np.fromfile(runpath+'/globalomega.dat')
+Globalgamma = np.fromfile(runpath+'/globalgamma.dat')
+
 Globalgamma = Globalgamma / 2.0
-
 Globalomega = np.sqrt( GlobalOmega**2 - Globalgamma**2 )
 Globalomega = -1.0*Globalomega
 
