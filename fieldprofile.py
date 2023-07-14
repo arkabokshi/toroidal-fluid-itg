@@ -14,7 +14,7 @@ tstamp = input('Enter last 5-digits of time-slice:')
 tstamp = int(tstamp)
 
 param = loadtxt(runpath+'/parameters.txt')
-xx = loadtxt(runpath+'/xx.txt')
+xx = np.fromfile(runpath+'/xx.dat')
 realfieldstart = np.fromfile(runpath+'/100000.dat')
 imagfieldstart = np.fromfile(runpath+'/200000.dat')
 realfieldend = np.fromfile(runpath+'/'+str(100000+tstamp)+'.dat')
