@@ -30,7 +30,7 @@ FinalMode = int(param[5])
 RealInitialModes = reshape(realfieldstart,(NumModes,length))
 RealFinalModes = reshape(realfieldend,(NumModes,length)) #/ np.max(np.abs(realfieldend))
 ImagFinalModes = reshape(imagfieldend,(NumModes,length)) #/ np.max(np.abs(imagfieldend))
-ComplexFinalModes=np.zeros(RealFinalModes.shape,dtype=np.complex)
+ComplexFinalModes=np.zeros(RealFinalModes.shape,dtype=complex)
 ComplexFinalModes.real=RealFinalModes
 ComplexFinalModes.imag=ImagFinalModes
 
