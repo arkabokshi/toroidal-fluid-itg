@@ -12,7 +12,7 @@ from numpy.fft import *
 runpath = './run_3'
 
 param = np.loadtxt(runpath+'/parameters.txt')
-xx = np.loadtxt(runpath+'/xx.txt')
+xx = np.fromfile(runpath+'/xx.dat')
 growthrate = np.fromfile(runpath+'/growthrate.dat')
 frequency  = np.fromfile(runpath+'/frequency.dat')
 gammaE_t = np.fromfile(runpath+'/gammaE_t.dat')

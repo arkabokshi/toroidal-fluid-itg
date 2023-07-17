@@ -14,7 +14,7 @@ tstamp = input('Enter last 5-digits of time-slice:')
 tstamp = int(tstamp)
 
 param = loadtxt(runpath+'/parameters.txt')
-xx = loadtxt(runpath+'/xx.txt')
+xx = np.fromfile(runpath+'/xx.dat')
 realfieldstart = np.fromfile(runpath+'/100000.dat')
 imagfieldstart = np.fromfile(runpath+'/200000.dat')
 realfieldend = np.fromfile(runpath+'/'+str(100000+tstamp)+'.dat')
@@ -30,7 +30,7 @@ FinalMode = int(param[5])
 RealInitialModes = reshape(realfieldstart,(NumModes,length))
 RealFinalModes = reshape(realfieldend,(NumModes,length)) #/ np.max(np.abs(realfieldend))
 ImagFinalModes = reshape(imagfieldend,(NumModes,length)) #/ np.max(np.abs(imagfieldend))
-ComplexFinalModes=np.zeros(RealFinalModes.shape,dtype=np.complex)
+ComplexFinalModes=np.zeros(RealFinalModes.shape,dtype=complex)
 ComplexFinalModes.real=RealFinalModes
 ComplexFinalModes.imag=ImagFinalModes
 
