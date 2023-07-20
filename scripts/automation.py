@@ -24,7 +24,7 @@ BASE_RUN_PATH = "GPO_"
 
 # Initial result for the poloidal width
 INITIAL_POL_WIDTH = simulation.run(
-    eta_g=x[0], epsilon_n=x[1], run_path=BASE_RUN_PATH + "0"
+    eta_g=x[0][0], epsilon_n=x[1][0], run_path=BASE_RUN_PATH + "0"
 )
 y = array([objective_function(INITIAL_POL_WIDTH)])
 
@@ -50,7 +50,7 @@ for i in range(5):
 
     # evaluate the new point
     POLOIDAL_WIDTH = simulation.run(
-        eta_g=new_x[0], epsilon_n=new_x[1], run_path=f"{BASE_RUN_PATH}{i + 1}"
+        eta_g=new_x[0][0], epsilon_n=new_x[1][0], run_path=f"{BASE_RUN_PATH}{i + 1}"
     )
     new_y = objective_function(POLOIDAL_WIDTH)
     print("new_y", new_y)
