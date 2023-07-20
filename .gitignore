@@ -4,3 +4,4 @@
 *.dat
 *.mod
 itg
+__pycache__
