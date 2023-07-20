@@ -8,7 +8,7 @@ import numpy as np
 RUN_PATH = "./run_3"
 
 param = np.loadtxt(RUN_PATH + "/parameters.txt")
-xx = np.loadtxt(RUN_PATH + "/xx.txt")
+xx = np.fromfile(RUN_PATH + "/xx.dat")
 growthrate = np.fromfile(RUN_PATH + "/growthrate.dat")
 frequency = np.fromfile(RUN_PATH + "/frequency.dat")
 gammaE_t = np.fromfile(RUN_PATH + "/gammaE_t.dat")
