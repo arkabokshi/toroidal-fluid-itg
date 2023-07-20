@@ -2,6 +2,7 @@
 Contains classes pertaining to different simulation models.
 """
 import math
+import os
 import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,10 +39,11 @@ class ToroidalFluidITG:
             file_data = file.read()
             self.input_file_backup = file_data
 
+        print(self.eta_g, self.epsilon_n, self.run_path)
         # Replace the target string
-        file_data = file_data.replace("%ETA_G%", self.eta_g)
-        file_data = file_data.replace("%EPSILON_N%", self.epsilon_n)
-        file_data = file_data.replace("%RUN_PATH%", self.run_path)
+        file_data = file_data.replace("%ETA_G%", str(self.eta_g))
+        file_data = file_data.replace("%EPSILON_N%", str(self.epsilon_n))
+        file_data = file_data.replace("%RUN_PATH%", str(self.run_path))
 
         # Write the file out again
         with open("inputdata.f90", "w", encoding="utf-8") as file:
@@ -51,11 +53,18 @@ class ToroidalFluidITG:
         with open("inputdata.f90", "w", encoding="utf-8") as file:
             file.write(self.input_file_backup)
 
-    def get_poloidal_width(self) -> float:
-        param = np.loadtxt(f"../{self.run_path}/parameters.txt")
+    def get_poloidal_width(self, plot=False) -> float:
+        param = np.loadtxt(f"./{self.run_path}/parameters.txt")
 
-        real_field_end = np.loadtxt(f"../{self.run_path}/120000.txt")
-        imag_field_end = np.loadtxt(f"../{self.run_path}/220000.txt")
+        for file in os.listdir(self.run_path):
+            # Loop through the output data to find the time step of the last
+            # output file. In most cases this will probably be "20000", but it
+            # could be Lower if the code exited via the gamma tolerance.
+            if ".dat" in file and file.replace(".dat", "").isnumeric():
+                time_step = file.replace(".dat", "")[1:]
+
+        real_field_end = np.fromfile(f"./{self.run_path}/1{time_step}.dat")
+        imag_field_end = np.fromfile(f"./{self.run_path}/2{time_step}.dat")
 
         length = int(param[2])
         num_modes = int(param[3])
@@ -68,7 +77,7 @@ class ToroidalFluidITG:
         imag_final_modes = np.reshape(
             imag_field_end, (num_modes, length)
         )  # / np.max(np.abs(imag_field_end))
-        complex_final_modes = np.zeros(real_final_modes.shape, dtype=np.complex)
+        complex_final_modes = np.zeros(real_final_modes.shape, dtype=complex)
         complex_final_modes.real = real_final_modes
         complex_final_modes.imag = imag_final_modes
 
@@ -111,15 +120,14 @@ class ToroidalFluidITG:
         fwhm = fit.fwhm(popt[2], popt[3])
         print("FWHM:", fwhm, "radians")
         # Write out the FWHM
-        with open(f"../{self.run_path}/fwhm.txt", "w", encoding="utf-8") as file:
-            file.write(fwhm)
+        with open(f"./{self.run_path}/fwhm.txt", "w", encoding="utf-8") as file:
+            file.write(str(fwhm))
 
         # ------------------------------- #
         # Routine for poloidal width plot #
         # ------------------------------- #
-        POLOIDAL_WIDTH_PLOT = False
 
-        if POLOIDAL_WIDTH_PLOT:
+        if plot:
             # Generate the fit using the newly fitted guess parameters
             gaussian_fit = fit.gaussian(radians, *popt)
 

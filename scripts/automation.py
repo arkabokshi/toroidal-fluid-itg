@@ -1,7 +1,9 @@
 """
     This script should automate the GPR workflow.
+    Run this script from the root directory of the toroidal-fluid-itg repository.
 """
-from numpy import linspace, array
+import pickle
+from numpy import linspace, array, append, empty, save
 from inference.gp import GpOptimiser, UpperConfidenceBound
 from models import ToroidalFluidITG
 
@@ -14,48 +16,89 @@ def objective_function(pol_width: float) -> float:
     return 1.0 / pol_width
 
 
-# Initial values for [ eta_g, epsilon_n ]
-x = array([[1.0], [0.01]])
+# Initial values, in pairs, for [ eta_g, epsilon_n ]
+x = array([[1.0, 0.01], [5, 0.1]])
 
 # Create an instance of the simulation class
 simulation = ToroidalFluidITG()
 
 BASE_RUN_PATH = "GPO_"
+LOWER_BOUND_RUN_PATH = BASE_RUN_PATH + "0_lower_bound"
+UPPER_BOUND_RUN_PATH = BASE_RUN_PATH + "0_upper_bound"
 
-# Initial result for the poloidal width
-INITIAL_POL_WIDTH = simulation.run(
-    eta_g=x[0][0], epsilon_n=x[1][0], run_path=BASE_RUN_PATH + "0"
-)
-y = array([objective_function(INITIAL_POL_WIDTH)])
+# Initial results for the lower bound's poloidal width.
+# If data form the run already exists, simply read the value from fwhm.txt.
+# Otherwise, run the simulation.
+try:
+    f = open(f"./{LOWER_BOUND_RUN_PATH}/fwhm.txt", encoding="utf-8")
+except FileNotFoundError:
+    y = array(
+        [
+            objective_function(
+                simulation.run(
+                    eta_g=x[0][0], epsilon_n=x[0][1], run_path=LOWER_BOUND_RUN_PATH
+                )
+            )
+        ]
+    )
+else:
+    with open(f"./{LOWER_BOUND_RUN_PATH}/fwhm.txt", "r", encoding="utf-8") as file:
+        y = array([objective_function(float(file.read()))])
 
-# define bounds for the optimisation of [ eta_g, epsilon_n ]
+# Initial result for the upper bound's poloidal width.
+# If data form the run already exists, simply read the value from fwhm.txt.
+# Otherwise, run the simulation.
+try:
+    f = open(f"./{UPPER_BOUND_RUN_PATH}/fwhm.txt", encoding="utf-8")
+except FileNotFoundError:
+    y = append(
+        y,
+        objective_function(
+            simulation.run(
+                eta_g=x[1][0], epsilon_n=x[1][1], run_path=UPPER_BOUND_RUN_PATH
+            )
+        ),
+    )
+else:
+    with open(f"./{UPPER_BOUND_RUN_PATH}/fwhm.txt", "r", encoding="utf-8") as file:
+        y = append(y, [objective_function(float(file.read()))])
+
+# Define bounds for the optimisation of [ eta_g, epsilon_n ]
+# These are implied in the initial values of x, but need to be in this form,
+# i.e. as tuples, for the GPO class.
 bounds = [(1.0, 5.0), (0.01, 0.1)]
 
 # Create an instance of GpOptimiser
 GPO = GpOptimiser(x, y, bounds=bounds, acquisition=UpperConfidenceBound)
 
+RESOLUTION = 100
+ETA_G_POINTS = linspace(*bounds[0], RESOLUTION)
+EPSILON_N_POINTS = linspace(*bounds[1], RESOLUTION)
+x_gp = empty((RESOLUTION, 2))
+
+for i in range(RESOLUTION):
+    x_gp[i] = [ETA_G_POINTS[i], EPSILON_N_POINTS[i]]
+
 # Store the current state of the system for plotting later
-resolution = [5, 10]  # for [ eta_g, epsilon_n ]
-x_gp = array([linspace(*bounds[0], resolution[0]), linspace(*bounds[1], resolution[1])])
 mu, sig = GPO(x_gp)
 means = [mu]
 sigmas = [sig]
 acquis = [array([GPO.acquisition(k) for k in x_gp])]
 
-
+# This is where the magic happens...
 for i in range(5):
-    # request the proposed evaluation
+    # Request the proposed evaluation
     new_x = GPO.propose_evaluation()
     print("new_x:", new_x)
 
-    # evaluate the new point
+    # Evaluate the new point
     POLOIDAL_WIDTH = simulation.run(
-        eta_g=new_x[0][0], epsilon_n=new_x[1][0], run_path=f"{BASE_RUN_PATH}{i + 1}"
+        eta_g=new_x[0], epsilon_n=new_x[1], run_path=f"{BASE_RUN_PATH}{i + 1}"
     )
     new_y = objective_function(POLOIDAL_WIDTH)
     print("new_y", new_y)
 
-    # update the gaussian process with the new information
+    # Update the gaussian process with the new information
     GPO.add_evaluation(new_x, new_y)
 
     # Store the current state of the system for plotting later
@@ -64,57 +107,14 @@ for i in range(5):
     sigmas.append(sig)
     acquis.append(array([GPO.acquisition(k) for k in x_gp]))
 
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-fig, axes = plt.subplots(2, 3, gridspec_kw={"height_ratios": [1, 1]}, figsize=(15, 10))
-
-for k, i, j in [(i, *divmod(i, 3)) for i in range(6)]:
-    aq = acquis[k] - acquis[k].min()
-    proposal = x_gp[aq.argmax()]
-
-    divider = make_axes_locatable(axes[i, j])
-    acq_ax = divider.append_axes("bottom", size="40%", pad=0.0)
-
-    axes[i, j].plot(
-        GPO.x[: k + 4], GPO.y[: k + 4], "o", c="red", label="observations", zorder=5
-    )
-    axes[i, j].plot(x_gp, means[k], lw=2, c="blue", label="GP prediction")
-    axes[i, j].fill_between(
-        x_gp,
-        (means[k] - 2 * sigmas[k]),
-        y2=(means[k] + 2 * sigmas[k]),
-        color="blue",
-        alpha=0.15,
-        label="95% confidence interval",
-    )
-    axes[i, j].set_ylim([-1.5, 4])
-    axes[i, j].set_xlim([-8, 8])
-    axes[i, j].set_xticks([])
-    axes[i, j].text(
-        0.99,
-        0.98,
-        f"iteration {k + 1}",
-        transform=axes[i, j].transAxes,
-        verticalalignment="top",
-        horizontalalignment="right",
-        fontsize=13,
-    )
-
-    acq_ax.fill_between(x_gp, 0.9 * aq / aq.max(), color="green", alpha=0.15)
-    acq_ax.plot(x_gp, 0.9 * aq / aq.max(), color="green", label="acquisition function")
-    acq_ax.plot(
-        [proposal] * 2, [0.0, 1.0], c="green", ls="dashed", label="acquisition maximum"
-    )
-    acq_ax.set_ylim([0, 1])
-    acq_ax.set_xlim([-8, 8])
-    acq_ax.set_yticks([])
-    acq_ax.set_xlabel("x")
-
-    if k == 0:
-        axes[i, j].legend()
-        acq_ax.legend()
-
-plt.tight_layout()
-plt.savefig("GPO.png", format="png")
-plt.show()
+# Write out all data for easy loading in the gpo_plot.py script
+with open("means.npy", "wb") as f:
+    save(f, means)
+with open("sigmas.npy", "wb") as f:
+    save(f, sigmas)
+with open("acquis.npy", "wb") as f:
+    save(f, acquis)
+with open("x_gp.npy", "wb") as f:
+    save(f, x_gp)
+with open("GPO.pickle", "wb") as file:
+    pickle.dump(GPO, file)
