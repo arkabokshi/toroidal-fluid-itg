@@ -1,21 +1,21 @@
 SUBROUTINE odesolver(nn,dh,ax,bx,cx)
-USE inputdata,ONLY:inv_tridiag_matrix,low_diag,diagonal,upp_diag
-IMPLICIT NONE
-INCLUDE 'mpif.h'
-INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
+    USE inputdata,ONLY:inv_tridiag_matrix,low_diag,diagonal,upp_diag
+    IMPLICIT NONE
+    INCLUDE 'mpif.h'
+    INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
 
 ! INPUTS
-  INTEGER,INTENT(IN)::nn
-  REAL(KIND=dp),INTENT(IN)::dh
-  !REAL(KIND=dp),DIMENSION(nn),INTENT(IN) :: ax,bx,cx
-  DOUBLE COMPLEX,DIMENSION(nn),INTENT(IN) :: ax,bx,cx
+    INTEGER,INTENT(IN)::nn
+    REAL(KIND=dp),INTENT(IN)::dh
+    !REAL(KIND=dp),DIMENSION(nn),INTENT(IN) :: ax,bx,cx
+    DOUBLE COMPLEX,DIMENSION(nn),INTENT(IN) :: ax,bx,cx
 
 ! LOCAL VARIABLES
-  !REAL(KIND=dp),DIMENSION(nn,nn) :: tridiag_matrix
-  !REAL(KIND=dp),DIMENSION(nn)::AA,BB,CC
-  DOUBLE COMPLEX,DIMENSION(nn,nn) :: tridiag_matrix
-  DOUBLE COMPLEX,DIMENSION(nn)	  :: AA, BB, CC
-  INTEGER::i,m,n
+    !REAL(KIND=dp),DIMENSION(nn,nn) :: tridiag_matrix
+    !REAL(KIND=dp),DIMENSION(nn)::AA,BB,CC
+    DOUBLE COMPLEX,DIMENSION(nn,nn) :: tridiag_matrix
+    DOUBLE COMPLEX,DIMENSION(nn)	  :: AA, BB, CC
+    INTEGER::i,m,n
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -23,12 +23,12 @@ INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
 ! A(i)f(i-1) + B(i)f(i) + C(i)f(i+1) = D(i) !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  DO i=1,nn
-    AA(i) = ( ax(i)/(dh**2) - bx(i)/(2d0*dh) )
-    BB(i) = ( -2d0*ax(i)/(dh**2) + cx(i) )
-    CC(i) = ( ax(i)/(dh**2) + bx(i)/(2d0*dh) )
-!     DD(i) = ( dx(i) ) 
-  END DO
+    DO i=1,nn
+        AA(i) = ( ax(i)/(dh**2) - bx(i)/(2d0*dh) )
+        BB(i) = ( -2d0*ax(i)/(dh**2) + cx(i) )
+        CC(i) = ( ax(i)/(dh**2) + bx(i)/(2d0*dh) )
+!     DD(i) = ( dx(i) )
+    END DO
 
 
 
@@ -44,30 +44,30 @@ INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
 ! ! 2. NEUMANN - setting slope at the boundary to a fixed value
 !   AA(nn) = -1d0/dh; BB(nn) = 1d0/dh; DD(nn) = 0d0
 
-  BB(1)  = DCMPLX(1d0,1d0);  CC(1)  = DCMPLX(0D0,0d0)   !; DD(1) = 0D0
-  BB(nn) = DCMPLX(1d0,1d0);  AA(nn) = DCMPLX(0D0,0d0)   !; DD(nn) = 0D0
+    BB(1)  = DCMPLX(1d0,1d0);  CC(1)  = DCMPLX(0D0,0d0)   !; DD(1) = 0D0
+    BB(nn) = DCMPLX(1d0,1d0);  AA(nn) = DCMPLX(0D0,0d0)   !; DD(nn) = 0D0
 
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Constructing the tridiagonal matrix ! 
+! Constructing the tridiagonal matrix !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     tridiag_matrix = DCMPLX(0d0,0d0)
-  ! DIAGONAL TERM
+    ! DIAGONAL TERM
     DO i = 1,nn
-      tridiag_matrix(i,i) = BB(i)
-	diagonal(i)  = BB(i) 
+        tridiag_matrix(i,i) = BB(i)
+        diagonal(i)  = BB(i)
     END DO
-  ! LOW-DIAG TERM
+    ! LOW-DIAG TERM
     DO i = 2,nn
-      tridiag_matrix(i,i-1) = AA(i)
-	low_diag(i-1) = AA(i) 
+        tridiag_matrix(i,i-1) = AA(i)
+        low_diag(i-1) = AA(i)
     END DO
-  ! UPP_DIAG TERM
+    ! UPP_DIAG TERM
     DO i = 1,nn-1
-      tridiag_matrix(i,i+1) = CC(i)
-	upp_diag(i) = CC(i)
+        tridiag_matrix(i,i+1) = CC(i)
+        upp_diag(i) = CC(i)
     END DO
 
 
@@ -75,37 +75,37 @@ INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
 ! Inverting the matrix using external library !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  !CALL matrixinvert(nn,tridiag_matrix,inv_tridiag_matrix)
+    !CALL matrixinvert(nn,tridiag_matrix,inv_tridiag_matrix)
 
 
 !!!!!!!!!!!
 ! MODULES !
 !!!!!!!!!!!
 
-  CONTAINS
+CONTAINS
 
-  SUBROUTINE matrixinvert(MM,MATRIX,INV_MATRIX)
-  IMPLICIT NONE
-  EXTERNAL DGETRF,DGETRI
+    SUBROUTINE matrixinvert(MM,MATRIX,INV_MATRIX)
+        IMPLICIT NONE
+        EXTERNAL DGETRF,DGETRI
 
-  INTEGER,INTENT(IN)::MM
-  !REAL(KIND=dp),DIMENSION(MM,MM),INTENT(IN)::MATRIX
-  !REAL(KIND=dp),DIMENSION(MM,MM),INTENT(OUT)::INV_MATRIX
-  !REAL(KIND=dp),DIMENSION(MM)::WORK
-  DOUBLE COMPLEX,DIMENSION(MM,MM),INTENT(IN)::MATRIX
-  DOUBLE COMPLEX,DIMENSION(MM,MM),INTENT(OUT)::INV_MATRIX
-  DOUBLE COMPLEX,DIMENSION(MM)::WORK
-  
-  INTEGER,DIMENSION(MM)::IPIV
-  INTEGER::INFO1,INFO2
+        INTEGER,INTENT(IN)::MM
+        !REAL(KIND=dp),DIMENSION(MM,MM),INTENT(IN)::MATRIX
+        !REAL(KIND=dp),DIMENSION(MM,MM),INTENT(OUT)::INV_MATRIX
+        !REAL(KIND=dp),DIMENSION(MM)::WORK
+        DOUBLE COMPLEX,DIMENSION(MM,MM),INTENT(IN)::MATRIX
+        DOUBLE COMPLEX,DIMENSION(MM,MM),INTENT(OUT)::INV_MATRIX
+        DOUBLE COMPLEX,DIMENSION(MM)::WORK
 
-      INV_MATRIX = MATRIX
-      !CALL DGETRF(MM,MM,INV_MATRIX,MM,IPIV,INFO1)
-      !CALL DGETRI(MM,INV_MATRIX,MM,IPIV,WORK,MM,INFO2)
-      CALL ZGETRF(MM,MM,INV_MATRIX,MM,IPIV,INFO1)
-      CALL ZGETRI(MM,INV_MATRIX,MM,IPIV,WORK,MM,INFO2)
+        INTEGER,DIMENSION(MM)::IPIV
+        INTEGER::INFO1,INFO2
 
-  END SUBROUTINE matrixinvert
+        INV_MATRIX = MATRIX
+        !CALL DGETRF(MM,MM,INV_MATRIX,MM,IPIV,INFO1)
+        !CALL DGETRI(MM,INV_MATRIX,MM,IPIV,WORK,MM,INFO2)
+        CALL ZGETRF(MM,MM,INV_MATRIX,MM,IPIV,INFO1)
+        CALL ZGETRI(MM,INV_MATRIX,MM,IPIV,WORK,MM,INFO2)
+
+    END SUBROUTINE matrixinvert
 
 
 
