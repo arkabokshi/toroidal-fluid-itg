@@ -1,7 +1,9 @@
 """
-    This script should automate the GPR workflow.
+    This script automates the GPO workflow.
     Run this script from the root directory of the toroidal-fluid-itg repository.
+    Produces a .csv file that summarises the results.
 """
+import csv
 import pickle
 from numpy import linspace, array, append, empty, save
 from inference.gp import GpOptimiser, UpperConfidenceBound
@@ -85,27 +87,34 @@ means = [mu]
 sigmas = [sig]
 acquis = [array([GPO.acquisition(k) for k in x_gp])]
 
-# This is where the magic happens...
-for i in range(5):
-    # Request the proposed evaluation
-    new_x = GPO.propose_evaluation()
-    print("new_x:", new_x)
+# Prepare a csv file to output iteration results to.
+with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
+    writer = csv.writer(outcsv)
+    writer.writerow([r"Run \#", r"$\eta_g$", r"$\epsilon_n$", "FWHM [radians]"])
 
-    # Evaluate the new point
-    POLOIDAL_WIDTH = simulation.run(
-        eta_g=new_x[0], epsilon_n=new_x[1], run_path=f"{BASE_RUN_PATH}{i + 1}"
-    )
-    new_y = objective_function(POLOIDAL_WIDTH)
-    print("new_y", new_y)
+    # This is where the magic happens...
+    for i in range(30):
+        # Request the proposed evaluation
+        new_x = GPO.propose_evaluation()
 
-    # Update the gaussian process with the new information
-    GPO.add_evaluation(new_x, new_y)
+        # Evaluate the new point
+        run_path = f"{BASE_RUN_PATH}{i + 1}"
+        POLOIDAL_WIDTH = simulation.run(
+            eta_g=new_x[0][0], epsilon_n=new_x[0][1], run_path=run_path
+        )
+        new_y = objective_function(POLOIDAL_WIDTH)
 
-    # Store the current state of the system for plotting later
-    mu, sig = GPO(x_gp)
-    means.append(mu)
-    sigmas.append(sig)
-    acquis.append(array([GPO.acquisition(k) for k in x_gp]))
+        # Update the gaussian process with the new information
+        GPO.add_evaluation(new_x, new_y)
+
+        # Store the current state of the system for plotting later
+        mu, sig = GPO(x_gp)
+        means.append(mu)
+        sigmas.append(sig)
+        acquis.append(array([GPO.acquisition(k) for k in x_gp]))
+        writer.writerow(
+            [str(i + 1), str(new_x[0][0]), str(new_x[0][1]), str(POLOIDAL_WIDTH)]
+        )
 
 # Write out all data for easy loading in the gpo_plot.py script
 with open("means.npy", "wb") as f:
