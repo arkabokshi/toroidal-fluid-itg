@@ -146,6 +146,6 @@ class ToroidalFluidITG:
             plt.ylabel("Intensity [arb. units]")
             plt.legend()
 
-            plt.show()
+            plt.savefig(f"{self.run_path}_polWidth.png", format="png")
 
         return fwhm
