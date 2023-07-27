@@ -19,8 +19,8 @@ MODULE inputdata
     REAL(KIND=dp),PARAMETER :: MinRad = 0.5_dp,                &
         MajRad = 5.0_dp,                                        &    ! Not used explicitly anywhere in the code
 
-        krhoi  =  0.2,                                          &    ! Parameters explained in the paper
-        shear  =  25.0_dp,                                      &    ! Bokshi PPCF 2016
+        krhoi  =  0.2,                                          &    ! Parameters explained in the paper Bokshi PPCF 2016
+        shear  =  25.0_dp,                                      &    ! [1,30]
         CURV   =  1.0_dp,                                       &
         etag   =  %ETA_G%_dp,                                   &    ! [2,5]
         qedge  =  3.45_dp,                                      &    !
