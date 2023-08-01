@@ -55,12 +55,35 @@ else:
     # have to be created in order for the GPR algorithm to proceed.
     x = array(
         [
+            # 6 Face centers
             [3.5, 0.01, 15.5],
             [5.0, 0.055, 15.5],
             [3.5, 0.1, 15.5],
             [2.0, 0.055, 30.0],
             [3.5, 0.055, 15.5],
             [3.5, 0.055, 1.0],
+            # 8 Corners
+            [2.0, 0.01, 1.0],
+            [5.0, 0.01, 1.0],
+            [2.0, 0.01, 30.0],
+            [5.0, 0.01, 30.0],
+            [2.0, 0.1, 1.0],
+            [5.0, 0.1, 1.0],
+            [2.0, 0.1, 30.0],
+            [5.0, 0.1, 30.0],
+            # 12 Edge centers
+            [3.5, 0.01, 1.0],
+            [2.0, 0.01, 15.5],
+            [3.5, 0.01, 30.0],
+            [5.0, 0.01, 15.5],
+            [3.5, 0.1, 1.0],
+            [2.0, 0.1, 15.5],
+            [3.5, 0.1, 30.0],
+            [5.0, 0.1, 15.5],
+            [3.5, 0.055, 1.0],
+            [2.0, 0.055, 15.5],
+            [3.5, 0.055, 30.0],
+            [5.0, 0.055, 15.5],
         ]
     )
     y = empty(len(x))
@@ -117,7 +140,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         )
 
     # This is where the magic happens...
-    for i in range(95):
+    for i in range(74):
         # Request the proposed evaluation
         new_x = GPO.propose_evaluation()
 
