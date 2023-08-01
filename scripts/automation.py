@@ -23,7 +23,7 @@ def objective_function(pol_width: float) -> float:
 simulation = ToroidalFluidITG()
 BASE_RUN_PATH = "GPO_"
 
-LOAD_DATA = True
+LOAD_DATA = False
 
 if LOAD_DATA:
     DATA_COUNT = load_data.get_csv_row_count(
@@ -47,25 +47,22 @@ if LOAD_DATA:
 else:
     # If not loading data from a previous run, at least two data points
     # have to be created in order for the GPR algorithm to proceed.
-    x = array([[1.0, 0.01], [5, 0.1]])
+    x = array([[2.0, 25.0], [2.0, 1.0], [3.0, 15.0], [4.0, 30.0], [5.0, 20.0]])
+    y = empty(len(x))
 
-    LOWER_BOUND_RUN_PATH = BASE_RUN_PATH + "0_lower_bound"
-    UPPER_BOUND_RUN_PATH = BASE_RUN_PATH + "0_upper_bound"
-
-    y1 = objective_function(
-        simulation.run(eta_g=x[0][0], epsilon_n=x[0][1], run_path=LOWER_BOUND_RUN_PATH)
-    )
-
-    y2 = objective_function(
-        simulation.run(eta_g=x[1][0], epsilon_n=x[1][1], run_path=UPPER_BOUND_RUN_PATH)
-    )
-
-    y = array([y1, y2])
+    for j, params in enumerate(x):
+        # Evaluate the new point
+        run_path = f"{BASE_RUN_PATH}init_{j + 1}"
+        poloidal_width = simulation.run(
+            eta_g=params[0], epsilon_n=0.08, shear=params[1], run_path=run_path
+        )
+        y[j] = objective_function(poloidal_width)
 
 # Define bounds for the optimisation of [ eta_g, epsilon_n ]
 # These are implied in the initial values of x, but need to be in this form,
 # i.e. as tuples, for the GPO class.
-bounds = [(1.0, 5.0), (0.01, 0.1)]
+# bounds = [(1.0, 5.0), (0.01, 0.1)]  # eta_g, epsilon_n
+bounds = [(2.0, 5.0), (1, 30)]  # eta_g, shear
 
 # Create an instance of GpOptimiser
 GPO = GpOptimiser(x, y, bounds=bounds, acquisition=UpperConfidenceBound)
@@ -86,18 +83,31 @@ acquis = [array([GPO.acquisition(k) for k in x_gp])]
 
 # Prepare a csv file to output iteration results to.
 with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
-    writer = csv.writer(outcsv)
-    writer.writerow([r"Run \#", r"$\eta_g$", r"$\epsilon_n$", "FWHM [radians]"])
+    csv_writer = csv.writer(outcsv)
+    csv_writer.writerow([r"Run \#", r"$\eta_g$", "shear", "FWHM [radians]"])
+
+    # Add all of the init values to the output
+    for k, params in enumerate(x):
+        # The values in the y array have already been passed through the
+        # objective function, so I need to convert them back to FWHM.
+        csv_writer.writerow(
+            [
+                f"Init {k + 1}",
+                str(params[0]),
+                str(params[1]),
+                str(objective_function(y[k])),
+            ]
+        )
 
     # This is where the magic happens...
-    for i in range(30):
+    for i in range(95):
         # Request the proposed evaluation
         new_x = GPO.propose_evaluation()
 
         # Evaluate the new point
         run_path = f"{BASE_RUN_PATH}{i + 1}"
         poloidal_width = simulation.run(
-            eta_g=new_x[0], epsilon_n=new_x[1], run_path=run_path
+            eta_g=new_x[0], epsilon_n=0.08, shear=new_x[1], run_path=run_path
         )
         new_y = objective_function(poloidal_width)
 
@@ -110,7 +120,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         means.append(mu)
         sigmas.append(sig)
         acquis.append(array([GPO.acquisition(k) for k in x_gp]))
-        writer.writerow(
+        csv_writer.writerow(
             [str(i + 1), str(new_x[0][0]), str(new_x[0][1]), str(poloidal_width)]
         )
 

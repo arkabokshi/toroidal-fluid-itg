@@ -7,21 +7,29 @@ import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.signal import find_peaks
 import fit
 
 
 class ToroidalFluidITG:
     def __init__(
-        self, run_path="T_F_ITG", eta_g=1, epsilon_n=0.01, input_file_backup=""
+        self,
+        run_path="T_F_ITG",
+        eta_g=1,
+        epsilon_n=0.01,
+        shear=25.0,
+        input_file_backup="",
     ) -> None:
         self.run_path = run_path
         self.eta_g = eta_g
         self.epsilon_n = epsilon_n
+        self.shear = shear
         self.input_file_backup = input_file_backup
 
-    def run(self, eta_g, epsilon_n, run_path) -> float:
+    def run(self, eta_g, epsilon_n, shear, run_path) -> float:
         self.eta_g = eta_g
         self.epsilon_n = epsilon_n
+        self.shear = shear
         self.run_path = run_path
 
         self.set_variables()
@@ -43,6 +51,7 @@ class ToroidalFluidITG:
         # Replace the target string
         file_data = file_data.replace("%ETA_G%", str(self.eta_g))
         file_data = file_data.replace("%EPSILON_N%", str(self.epsilon_n))
+        file_data = file_data.replace("%SHEAR%", str(self.shear))
         file_data = file_data.replace("%RUN_PATH%", str(self.run_path))
 
         # Write the file out again
@@ -85,40 +94,67 @@ class ToroidalFluidITG:
         # Routine for plotting phi(x) #
         # --------------------------- #
 
-        NUM_THETA = 720
+        num_theta = 720
 
-        Potential = np.zeros((length, NUM_THETA))
-        RealLocalPotential = np.zeros(length)
-        ImagLocalPotential = np.zeros(length)
+        potential = np.zeros((length, num_theta))
+        real_local_potential = np.zeros(length)
+        imag_local_potential = np.zeros(length)
 
-        for jj in range(NUM_THETA):
-            Theta = float(jj) / (NUM_THETA - 1) * 2.0 * math.pi
-            RealLocalPotential = 0.0
-            ImagLocalPotential = 0.0
+        for jj in range(num_theta):
+            theta = float(jj) / (num_theta - 1) * 2.0 * math.pi
+            real_local_potential = 0.0
+            imag_local_potential = 0.0
             for m in range(initial_mode, final_mode + 1):
-                RealLocalPotential += real_final_modes[m - initial_mode, :] * math.cos(
-                    m * Theta
-                ) + imag_final_modes[m - initial_mode, :] * math.sin(m * Theta)
-                ImagLocalPotential += imag_final_modes[m - initial_mode, :] * math.cos(
-                    m * Theta
-                ) - real_final_modes[m - initial_mode, :] * math.sin(m * Theta)
-            Potential[:, jj] = np.sqrt(
-                RealLocalPotential**2 + ImagLocalPotential**2
+                real_local_potential += real_final_modes[
+                    m - initial_mode, :
+                ] * math.cos(m * theta) + imag_final_modes[
+                    m - initial_mode, :
+                ] * math.sin(
+                    m * theta
+                )
+                imag_local_potential += imag_final_modes[
+                    m - initial_mode, :
+                ] * math.cos(m * theta) - real_final_modes[
+                    m - initial_mode, :
+                ] * math.sin(
+                    m * theta
+                )
+            potential[:, jj] = np.sqrt(
+                real_local_potential**2 + imag_local_potential**2
             )
 
-        maxIndex = np.unravel_index(np.argmax(Potential, axis=None), Potential.shape)
-        polSection = Potential[maxIndex[0], :]
-        polSectionCentred = np.roll(polSection, int(polSection.size / 2))
-        radians = np.linspace(0, 2 * np.pi, polSection.size)
+        max_index = np.unravel_index(np.argmax(potential, axis=None), potential.shape)
+
+        # This is the value that will be returned if the result is deemed anomalous.
+        penalty_value = 2 * np.pi
+
+        # Assume the FWHM is anomalous, until proven otherwise.
+        is_anomalous = True
+        reason = "Peak not centered"
+
+        if 600 <= max_index[0] <= 1000:
+            # An index of 800 would indicate that the peak value occurs in the centre
+            # of the poloidal section.
+            is_anomalous = False
+
+        pol_section = potential[max_index[0], :]
+        pol_section_centred = np.roll(pol_section, int(pol_section.size / 2))
+        radians = np.linspace(0, 2 * np.pi, pol_section.size)
+
+        peaks, _ = find_peaks(pol_section_centred, prominence=1)
+
+        if len(peaks) > 1:
+            # Finding more than one peak is an indication of an unconverged mode.
+            is_anomalous = True
+            reason = "Too many peaks"
 
         # Guess is an array containing [y_0, A, x_0, c]
-        gaussian_guess = [0.0, np.amax(polSectionCentred), np.pi, np.pi / 2]
+        gaussian_guess = [0.0, np.amax(pol_section_centred), np.pi, np.pi / 2]
         # pylint: disable=unbalanced-tuple-unpacking
         popt, pcov = curve_fit(
-            fit.gaussian, radians, polSectionCentred, p0=gaussian_guess
+            fit.gaussian, radians, pol_section_centred, p0=gaussian_guess
         )
         fwhm = fit.fwhm(popt[2], popt[3])
-        print("FWHM:", fwhm, "radians")
         # Write out the FWHM
         with open(f"./{self.run_path}/fwhm.txt", "w", encoding="utf-8") as file:
             file.write(str(fwhm))
@@ -132,7 +168,7 @@ class ToroidalFluidITG:
             gaussian_fit = fit.gaussian(radians, *popt)
 
             # Plot the simulation data
-            plt.plot(radians, polSectionCentred, label="toroidal-fluid-itg")
+            plt.plot(radians, pol_section_centred, label="toroidal-fluid-itg")
 
             # Plot the Gaussian fit
             plt.plot(radians, gaussian_fit, lw=2, label="Gaussian Fit")
@@ -147,5 +183,11 @@ class ToroidalFluidITG:
             plt.legend()
 
             plt.savefig(f"{self.run_path}_polWidth.png", format="png")
+            plt.clf()
 
-        return fwhm
+        print("Run path:", self.run_path)
+        print("Measured FWHM:", fwhm, "radians")
+        print("is_anomalous?", is_anomalous)
+        if is_anomalous:
+            print("  -> why?", reason)
+        return penalty_value if is_anomalous else fwhm
