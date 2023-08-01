@@ -53,22 +53,30 @@ if LOAD_DATA:
 else:
     # If not loading data from a previous run, at least two data points
     # have to be created in order for the GPR algorithm to proceed.
-    x = array([[2.0, 25.0], [2.0, 1.0], [3.0, 15.0], [4.0, 30.0], [5.0, 20.0]])
+    x = array(
+        [
+            [3.5, 0.01, 15.5],
+            [5.0, 0.055, 15.5],
+            [3.5, 0.1, 15.5],
+            [2.0, 0.055, 30.0],
+            [3.5, 0.055, 15.5],
+            [3.5, 0.055, 1.0],
+        ]
+    )
     y = empty(len(x))
 
     for j, params in enumerate(x):
         # Evaluate the new point
         run_path = f"{BASE_RUN_PATH}init_{j + 1}"
         poloidal_width = simulation.run(
-            eta_g=params[0], epsilon_n=0.08, shear=params[1], run_path=run_path
+            eta_g=params[0], epsilon_n=params[1], shear=params[2], run_path=run_path
         )
         y[j] = objective_function(poloidal_width)
 
 # Define bounds for the optimisation of [ eta_g, epsilon_n ]
 # These are implied in the initial values of x, but need to be in this form,
 # i.e. as tuples, for the GPO class.
-# bounds = [(1.0, 5.0), (0.01, 0.1)]  # eta_g, epsilon_n
-bounds = [(2.0, 5.0), (1, 30)]  # eta_g, shear
+bounds = [(2.0, 5.0), (0.01, 0.1), (1, 30)]  # eta_g, epsilon_n, shear
 
 # Create an instance of GpOptimiser
 GPO = GpOptimiser(x, y, bounds=bounds, acquisition=UpperConfidenceBound)
@@ -90,7 +98,9 @@ acquis = [array([GPO.acquisition(k) for k in x_gp])]
 # Prepare a csv file to output iteration results to.
 with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
     csv_writer = csv.writer(outcsv)
-    csv_writer.writerow([r"Run \#", r"$\eta_g$", "shear", "FWHM [radians]"])
+    csv_writer.writerow(
+        [r"Run \#", r"$\eta_g$", r"$\epsilon_n$", "shear", "FWHM [radians]"]
+    )
 
     # Add all of the init values to the output
     for k, params in enumerate(x):
@@ -101,6 +111,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
                 f"Init {k + 1}",
                 str(params[0]),
                 str(params[1]),
+                str(params[2]),
                 str(objective_function(y[k])),
             ]
         )
@@ -113,7 +124,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         # Evaluate the new point
         run_path = f"{BASE_RUN_PATH}{i + 1}"
         poloidal_width = simulation.run(
-            eta_g=new_x[0], epsilon_n=0.08, shear=new_x[1], run_path=run_path
+            eta_g=new_x[0], epsilon_n=new_x[1], shear=new_x[2], run_path=run_path
         )
         new_y = objective_function(poloidal_width)
 
@@ -127,7 +138,13 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         sigmas.append(sig)
         acquis.append(array([GPO.acquisition(k) for k in x_gp]))
         csv_writer.writerow(
-            [str(i + 1), str(new_x[0][0]), str(new_x[0][1]), str(poloidal_width)]
+            [
+                str(i + 1),
+                str(new_x[0][0]),
+                str(new_x[0][1]),
+                str(new_x[0][2]),
+                str(poloidal_width),
+            ]
         )
 
 # Write out all data for easy loading in the gpo_plot.py script
