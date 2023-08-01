@@ -5,6 +5,8 @@
 """
 import csv
 import pickle
+import subprocess
+from pathlib import Path
 from numpy import linspace, array, empty, save
 from inference.gp import GpOptimiser, UpperConfidenceBound
 from models import ToroidalFluidITG
@@ -18,6 +20,10 @@ def objective_function(pol_width: float) -> float:
     """
     return pol_width * -1.0
 
+
+# Read in a path to store all of the output data
+data_path = input("Enter relative path for GPR output storage:")
+Path(data_path).mkdir(parents=True, exist_ok=True)
 
 # Create an instance of the simulation class
 simulation = ToroidalFluidITG()
@@ -135,3 +141,5 @@ with open("x_gp.npy", "wb") as f:
     save(f, x_gp)
 with open("GPO.pickle", "wb") as file:
     pickle.dump(GPO, file)
+
+subprocess.run(f"mv *.pickle *.npy GPO_* {data_path}", shell=True, check=True)
