@@ -107,10 +107,12 @@ GPO = GpOptimiser(x, y, bounds=bounds, acquisition=UpperConfidenceBound)
 RESOLUTION = 100
 ETA_G_POINTS = linspace(*bounds[0], RESOLUTION)
 EPSILON_N_POINTS = linspace(*bounds[1], RESOLUTION)
-x_gp = empty((RESOLUTION, 2))
+SHEAR_POINTS = linspace(*bounds[2], RESOLUTION)
+
+x_gp = empty((RESOLUTION, len(bounds)))
 
 for i in range(RESOLUTION):
-    x_gp[i] = [ETA_G_POINTS[i], EPSILON_N_POINTS[i]]
+    x_gp[i] = [ETA_G_POINTS[i], EPSILON_N_POINTS[i], SHEAR_POINTS[i]]
 
 # Store the current state of the system for plotting later
 mu, sig = GPO(x_gp)
