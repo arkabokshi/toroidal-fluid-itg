@@ -1,6 +1,23 @@
 module alphainverse_mod
-  contains
-SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
+  use iso_fortran_env, only: real64
+
+  interface gtsv
+     procedure zgtsv
+  end interface gtsv
+
+  interface
+     pure subroutine zgtsv(n, nrhs, dl, d, du, b, ldb, info)
+       import real64
+       integer, intent(in) :: n, nrhs
+       integer, intent(in) :: ldb
+       integer, intent(out) :: info
+       complex(kind=real64), dimension(*), intent(in out) :: dl, d, du
+       complex(kind=real64), dimension(ldb, *), intent(in out) :: b
+     end subroutine zgtsv
+  end interface
+
+contains
+pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
     USE inputdata,&
         ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE,  &
         FlowShear,idelta_m,low_diag,diagonal,	&
@@ -98,7 +115,7 @@ SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPo
 
 
 ! ALPHA Operator
-    FUNCTION O_alpha(field)
+    pure FUNCTION O_alpha(field)
     use deriv_mod, only: deriv
     USE inputdata,&
         ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE,  &
