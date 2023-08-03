@@ -1,3 +1,5 @@
+module odesolver_mod
+  contains
 SUBROUTINE odesolver(nn,dh,ax,bx,cx)
     USE inputdata,ONLY: low_diag,diagonal,upp_diag
     IMPLICIT NONE
@@ -202,3 +204,4 @@ END SUBROUTINE odesolver
 !                to solve a system of equations.
 !
 !  =====================================================================
+end module odesolver_mod

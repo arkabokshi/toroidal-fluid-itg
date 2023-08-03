@@ -5,9 +5,11 @@ PROGRAM itg
         MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,                &
         ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta, &
         Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath
+    use evolve_mod, only: evolve
+    use odesolver_mod, only: odesolver
     IMPLICIT NONE
     INCLUDE 'mpif.h'
-    EXTERNAL Evolve,OdeSolver
+
 
     DOUBLE COMPLEX, DIMENSION( 3*length,NumModes ) ::   u1 = 0.0_dp, u0 = 0.0_dp
     DOUBLE COMPLEX, DIMENSION( NumSteps,NumModes ) ::   Omega_t  = 0.0_dp

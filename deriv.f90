@@ -1,3 +1,6 @@
+module deriv_mod
+contains
+
 SUBROUTINE Deriv( Order,InArray,OutArray,Delh,ArrayLength )
     IMPLICIT NONE
     INCLUDE 'mpif.h'
@@ -49,3 +52,4 @@ SUBROUTINE Deriv( Order,InArray,OutArray,Delh,ArrayLength )
 
 
 END SUBROUTINE Deriv
+end module deriv_mod

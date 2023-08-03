@@ -1,3 +1,5 @@
+module splines
+  contains
 subroutine spline2d(fun,x,y,nx,ny,kx,coef)
 !c-----------------------------------------------------------------------
 ! c     setup routine for bicubic spline of fun[x,y]
@@ -13,7 +15,7 @@ subroutine spline2d(fun,x,y,nx,ny,kx,coef)
         call spline(x,fun(ind),nx,-1.d30,-1.d30,coef(ind))
     end do
     return
-end
+  end subroutine spline2d
 ! c=======================================================================
 subroutine spline2dt(fun_new,x_new,y_new,kx_new,nx_new,ny_new,fun_old,x_old,y_old,kx_old,nx_old,ny_old,coef)
 ! c-----------------------------------------------------------------------
@@ -46,7 +48,7 @@ subroutine spline2dt(fun_new,x_new,y_new,kx_new,nx_new,ny_new,fun_old,x_old,y_ol
         end do
     end do
     return
-end
+  end subroutine spline2dt
 ! c=======================================================================
 subroutine spline1d(ynew,xnew,nnew,yold,xold,nold,y2old)
 ! c-----------------------------------------------------------------------
@@ -66,7 +68,7 @@ subroutine spline1d(ynew,xnew,nnew,yold,xold,nold,y2old)
         call splint(xold,yold,y2old,nold,xnew(i),ynew(i))
     end do
     return
-end
+  end subroutine spline1d
 ! c=======================================================================
 subroutine spline(x,y,n,yp1,ypn,y2)
 ! c-----------------------------------------------------------------------
@@ -149,7 +151,7 @@ subroutine spline(x,y,n,yp1,ypn,y2)
         y2(k)=y2(k)*y2(k+1)+u(k)
     end do
     return
-end
+  end subroutine spline
 ! c=======================================================================
 subroutine splint(xa,ya,y2a,n,x,y)
 ! c-----------------------------------------------------------------------
@@ -185,7 +187,7 @@ subroutine splint(xa,ya,y2a,n,x,y)
     b=(x-xa(klo))/h
     y=a*ya(klo)+b*ya(khi)+((a**3-a)*y2a(klo)+(b**3-b)*y2a(khi))*(h**2)/6.d0
     return
-end
+  end subroutine splint
 ! c=======================================================================
 subroutine zspline(xa,ya,y2a,n,zg,ng,za)
 ! c-----------------------------------------------------------------------
@@ -218,7 +220,7 @@ subroutine zspline(xa,ya,y2a,n,zg,ng,za)
     enddo
 
     return
-end
+  end subroutine zspline
 ! c=======================================================================
 subroutine zsplint(xa,ya,y2a,za,n,x,y,yp,z)
 ! c-----------------------------------------------------------------------
@@ -257,4 +259,5 @@ subroutine zsplint(xa,ya,y2a,za,n,x,y,yp,z)
         y2a(klo)*h**3*(2.d0*a**2-a**4-1.d0)/24.d0-   &
         y2a(khi)*h**3*(2.d0*b**2-b**4)/24.d0
     return
-end
+  end subroutine zsplint
+end module splines

@@ -1,10 +1,13 @@
+module evolve_mod
+  contains
 SUBROUTINE Evolve(u0,u1)
     USE inputdata,&
         ONLY:length,dp,dt,NumModes,InitialMode,m0,xx,FlowShear,ci,FlowOnOff,	&
         MyRank,MySize,ierror,ModesPerProc
+    use alphainverse_mod, only: alphainverse
     IMPLICIT NONE
     INCLUDE 'mpif.h'
-    EXTERNAL alphainverse
+
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes), INTENT(IN):: u0
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(OUT):: u1
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes):: k1,k2,k3,k4
@@ -111,3 +114,4 @@ CONTAINS
 
 
 END SUBROUTINE Evolve
+end module evolve_mod

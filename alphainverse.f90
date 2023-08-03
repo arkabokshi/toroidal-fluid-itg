@@ -1,8 +1,11 @@
+module alphainverse_mod
+  contains
 SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
     USE inputdata,&
-        ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE, 	&
+        ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE,  &
         FlowShear,idelta_m,low_diag,diagonal,	&
         upp_diag, TaylorFlow
+    use deriv_mod, only: deriv
     IMPLICIT NONE
     INCLUDE 'mpif.h'
     REAL(KIND=dp),INTENT(IN)::delPolMode
@@ -16,14 +19,14 @@ SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPo
     DOUBLE COMPLEX,DIMENSION(length-1)::lft_diag,rgt_diag
 
 ! DELTA-TERM
-    deltaterm =	O_delta(PHI) 				+ 	&
-        O_gamma(PHI) * FlowShear	 	+ 	&
-        O_beta(PHI)  * (FlowShear**2) 		+ 	&
+    deltaterm =	O_delta(PHI)                            +       &
+        O_gamma(PHI) * FlowShear	        +       &
+        O_beta(PHI)  * (FlowShear**2)           +       &
         O_alpha(PHI) * (FlowShear**3)
 
 
 ! GAMMA-TERM
-    gammaterm = 	O_gamma(G)				+	&
+    gammaterm =         O_gamma(G)				+	&
         O_beta(G)  * 2.0_dp * FlowShear		+	&
         O_alpha(G) * 3.0_dp * (FlowShear**2)
 
@@ -107,3 +110,4 @@ CONTAINS
 
 
 END SUBROUTINE alphainverse
+end module alphainverse_mod
