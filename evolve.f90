@@ -35,8 +35,11 @@ SUBROUTINE Evolve(u0,u1)
         DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(IN)::statevector
         DOUBLE COMPLEX,DIMENSION(length)::PHI,G,H,F,PHIminus,PHIplus,Gplus,Gminus,Hplus,Hminus
         REAL(KIND=dp)::delPolMode
-        INTEGER::ModeNumber,ll
-
+        INTEGER::ModeNumber
+        integer :: phi_start, phi_end, g_start, g_end, h_start, h_end
+        phi_start = 1 ; phi_end = phi_start + length - 1
+        g_start = phi_end + 1 ; g_end = g_start + length - 1
+        h_start = g_end + 1 ; h_end = h_start + length - 1
 
         ! ------------------------------ !
         ! Looping over the various modes !
@@ -45,16 +48,17 @@ SUBROUTINE Evolve(u0,u1)
         !$OMP PARALLEL DO DEFAULT(none) &
         !$OMP PRIVATE(ModeNumber, delPolMode, phi, g, h, phiplus, gplus, &
         !$OMP hplus, phiminus, gminus, hminus, F) &
-        !$OMP SHARED(ModesPerProc, MyRank, df, statevector) &
+        !$OMP SHARED(df, statevector, phi_start, phi_end, g_start, g_end, &
+        !$OMP h_start, h_end) &
         !$OMP SCHEDULE(static)
-        DO ModeNumber = 1+ModesPerProc*MyRank,(MyRank+1)*ModesPerProc
+        DO ModeNumber = 1, NumModes
 
 
             delPolMode = DBLE( InitialMode-m0-1+ModeNumber )
 
-            PHI  =  statevector( 0*length+1:1*length , ModeNumber )
-            G    =  statevector( 1*length+1:2*length , ModeNumber )
-            H    =  statevector( 2*length+1:3*length , ModeNumber )
+            PHI  =  statevector( phi_start:phi_end , ModeNumber )
+            G    =  statevector( g_start:g_end , ModeNumber )
+            H    =  statevector( h_start:h_end , ModeNumber )
 
 
             ! ------------------ !
@@ -63,9 +67,9 @@ SUBROUTINE Evolve(u0,u1)
 
             IF (ModeNumber.EQ.1) THEN
 
-                PHIplus  =   statevector( 0*length+1:1*length , ModeNumber+1 )
-                Gplus    =   statevector( 1*length+1:2*length , ModeNumber+1 )
-                Hplus    =   statevector( 2*length+1:3*length , ModeNumber+1 )
+                PHIplus  =   statevector( phi_start:phi_end , ModeNumber+1 )
+                Gplus    =   statevector( g_start:g_end , ModeNumber+1 )
+                Hplus    =   statevector( h_start:h_end , ModeNumber+1 )
                 PHIminus =   0.0_dp
                 Gminus   =   0.0_dp
                 Hminus   =   0.0_dp
@@ -75,21 +79,20 @@ SUBROUTINE Evolve(u0,u1)
                 PHIplus  =   0.0_dp
                 Gplus    =   0.0_dp
                 Hplus    =   0.0_dp
-                PHIminus =   statevector( 0*length+1:1*length , NumModes-1 )
-                Gminus   =   statevector( 1*length+1:2*length , NumModes-1 )
-                Hminus   =   statevector( 2*length+1:3*length , NumModes-1 )
+                PHIminus =   statevector( phi_start:phi_end , NumModes-1 )
+                Gminus   =   statevector( g_start:g_end , NumModes-1 )
+                Hminus   =   statevector( h_start:h_end , NumModes-1 )
 
             ELSE
 
-                PHIplus  =   statevector( 0*length+1:1*length , ModeNumber+1 )
-                PHIminus =   statevector( 0*length+1:1*length , ModeNumber-1 )
-                Gplus    =   statevector( 1*length+1:2*length , ModeNumber+1 )
-                Gminus   =   statevector( 1*length+1:2*length , ModeNumber-1 )
-                Hplus    =   statevector( 2*length+1:3*length , ModeNumber+1 )
-                Hminus   =   statevector( 2*length+1:3*length , ModeNumber-1 )
+                PHIplus  =   statevector( phi_start:phi_end , ModeNumber+1 )
+                PHIminus =   statevector( phi_start:phi_end , ModeNumber-1 )
+                Gplus    =   statevector( g_start:g_end , ModeNumber+1 )
+                Gminus   =   statevector( g_start:g_end , ModeNumber-1 )
+                Hplus    =   statevector( h_start:h_end , ModeNumber+1 )
+                Hminus   =   statevector( h_start:h_end , ModeNumber-1 )
 
             END IF
-
 
             ! --------------------------- !
             ! Constructing F by inversion !
@@ -98,10 +101,9 @@ SUBROUTINE Evolve(u0,u1)
 
             CALL alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
 
-!            ll = ll+1
-            !            TempData( :, ll ) = -ci * [ G, H, F ]
-            df( :, ModeNumber ) = -ci * [ G, H, F ]
-
+            df( phi_start:phi_end, ModeNumber ) = -ci * G
+            df( g_start:g_end, ModeNumber) = -ci * H
+            df( h_start:h_end, ModeNumber) = -ci * F
 
         END DO
         !$OMP END PARALLEL DO

@@ -14,7 +14,7 @@ itg:
 	@echo "    ITG mode evolution    "
 	@echo "--------------------------"
 	@$(CC) -o $(EXEC) $(FLAGS) $(MAINV2) $(LIBS)
-	@mpirun -np 1 nice -n 1 ./$(EXEC)
+	@./$(EXEC)
 
 clean:
 	@echo "--------------------------"
