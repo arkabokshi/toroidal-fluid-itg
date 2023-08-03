@@ -1,5 +1,5 @@
 SUBROUTINE odesolver(nn,dh,ax,bx,cx)
-    USE inputdata,ONLY:inv_tridiag_matrix,low_diag,diagonal,upp_diag
+    USE inputdata,ONLY: low_diag,diagonal,upp_diag
     IMPLICIT NONE
     INCLUDE 'mpif.h'
     INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
@@ -15,7 +15,7 @@ SUBROUTINE odesolver(nn,dh,ax,bx,cx)
     !REAL(KIND=dp),DIMENSION(nn)::AA,BB,CC
     DOUBLE COMPLEX,DIMENSION(nn,nn) :: tridiag_matrix
     DOUBLE COMPLEX,DIMENSION(nn)	  :: AA, BB, CC
-    INTEGER::i,m,n
+    INTEGER::i
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -1,8 +1,8 @@
 SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
     USE inputdata,&
         ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE, 	&
-        inv_tridiag_matrix,FlowShear,idelta_m,low_diag,diagonal,	&
-        upp_diag,super_diag, TaylorFlow
+        FlowShear,idelta_m,low_diag,diagonal,	&
+        upp_diag, TaylorFlow
     IMPLICIT NONE
     INCLUDE 'mpif.h'
     REAL(KIND=dp),INTENT(IN)::delPolMode
@@ -10,10 +10,10 @@ SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPo
     DOUBLE COMPLEX,DIMENSION(length),INTENT(OUT)::F
     DOUBLE COMPLEX,DIMENSION(length)::betaterm,gammaterm,deltaterm,couplingterm,DField,toinvert
     REAL(KIND=dp),PARAMETER::Delxx=ABS(xx(2)-xx(1))
-    INTEGER::info, ipiv
+    INTEGER::info
 
-    COMPLEX*16,DIMENSION(length)::cen_diag
-    COMPLEX*16,DIMENSION(length-1)::lft_diag,rgt_diag
+    DOUBLE COMPLEX,DIMENSION(length)::cen_diag
+    DOUBLE COMPLEX,DIMENSION(length-1)::lft_diag,rgt_diag
 
 ! DELTA-TERM
     deltaterm =	O_delta(PHI) 				+ 	&

@@ -11,14 +11,13 @@ PROGRAM itg
 
     DOUBLE COMPLEX, DIMENSION( 3*length,NumModes ) ::   u1 = 0.0_dp, u0 = 0.0_dp
     DOUBLE COMPLEX, DIMENSION( NumSteps,NumModes ) ::   Omega_t  = 0.0_dp
-    DOUBLE COMPLEX, DIMENSION( NumSteps )          ::   PolPot   = 0.0_dp
     DOUBLE PRECISION,DIMENSION(NumSteps )          ::   GlobalGamma = 0.0, GlobalOmega = 0.0, ThetaMaxima = 0.0
     DOUBLE COMPLEX, DIMENSION( length )            ::   ax,bx,cx
     REAL(KIND=dp) , DIMENSION( NumSteps )          ::   gammaE_t = -1.0_dp
     DOUBLE COMPLEX                                 ::   Omega_0
 
-    INTEGER           :: TimeStep,mode,q_m,NumFiles,ii,jj,mm,MaxTheta,begtime,endtime
-    REAL(KIND=dp)     ::   mu,delm,delx,t0,t1,Amp,tt,wm,gm,RealMax,ImagMax
+    INTEGER           :: TimeStep,mode,q_m,NumFiles,jj,mm,begtime,endtime
+    REAL(KIND=dp)     ::   mu,delm,delx,t0,t1,Amp,RealMax,ImagMax
     CHARACTER(LEN=20) ::   t
 
     DOUBLE PRECISION                      ::   ABS_PHIm_t0, ABS_PHIm_t1, ABS_Gm_t1, theta
@@ -158,8 +157,7 @@ PROGRAM itg
         !    IF (ShearingRate.GE.Final_gammaE) ShearingRate = Final_gammaE
         !  END IF
 
-        !  ShearingRate = Init_gammaE
-        !  gammaE_t(TimeStep) = ShearingRate
+        !          !  gammaE_t(TimeStep) = ShearingRate
 
         !IF ( TimeStep*dt.LT.GenIso_Transition ) THEN
         !         FlowShear = Init_gammaE * xx
