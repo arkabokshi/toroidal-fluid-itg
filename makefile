@@ -1,7 +1,7 @@
 CC = mpif90
 EXEC = itg
 FLAGS = -O3
-MAINV2 = inputdata.f90 splines.f90 deriv.f90 alphainverse.f90 evolve.f90 odesolver.f90 itg.f90
+MAINV2 = inputdata.f90 deriv.f90 alphainverse.f90 evolve.f90 odesolver.f90 itg.f90
 
 LIBS = -llapack -lblas
 
