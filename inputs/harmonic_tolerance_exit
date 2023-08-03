@@ -80,7 +80,7 @@ MODULE inputdata
     COMPLEX*16,DIMENSION(length-1) :: upp_diag,low_diag,super_diag  !
     COMPLEX*16,DIMENSION(length,NumModes) :: FULLtoinvert           !
 
-    LOGICAL,PARAMETER :: restart = .TRUE.,                    &    ! If restarting simulation, define location of
+    LOGICAL,PARAMETER :: restart = .FALSE.,                    &    ! If restarting simulation, define location of
         with_MPI = .TRUE.,                                      &    ! FinalFields.txt from previous run
         noiseStart = .false.,                                   &    !
         calcThetaMaxima = .false.                                    !
