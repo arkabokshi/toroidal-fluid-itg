@@ -3,7 +3,6 @@ module odesolver_mod
 SUBROUTINE odesolver(nn,dh,ax,bx,cx)
     USE inputdata,ONLY: low_diag,diagonal,upp_diag
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
     INTEGER,PARAMETER::dp=SELECTED_REAL_KIND(P=15,R=300)
 
 ! INPUTS

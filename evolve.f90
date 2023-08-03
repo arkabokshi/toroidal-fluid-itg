@@ -4,9 +4,7 @@ SUBROUTINE Evolve(u0,u1)
     USE inputdata,&
         ONLY:length,dp,dt,NumModes,InitialMode,m0,xx,FlowShear,ci,FlowOnOff,	&
         MyRank,MySize,ierror,ModesPerProc
-    use alphainverse_mod, only: alphainverse
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
 
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes), INTENT(IN):: u0
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(OUT):: u1
@@ -20,9 +18,7 @@ SUBROUTINE Evolve(u0,u1)
 
     u1 = u0 + dt/6.0_dp*( k1 + 2.0_dp*k2 + 2.0_dp*k3 + k4 )
 
-
-
-CONTAINS
+  end SUBROUTINE Evolve
 
 
     ! ------------------------------------ !
@@ -30,11 +26,14 @@ CONTAINS
     ! ------------------------------------ !
 
     FUNCTION df(statevector)
+    use alphainverse_mod, only: alphainverse
+    USE inputdata,&
+        ONLY:length,dp,dt,NumModes,InitialMode,m0,xx,FlowShear,ci,FlowOnOff,	&
+        MyRank,MySize,ierror,ModesPerProc
         IMPLICIT NONE
         DOUBLE COMPLEX,DIMENSION(3*length,NumModes)::df
         DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(IN)::statevector
         DOUBLE COMPLEX,DIMENSION(length)::PHI,G,H,F,PHIminus,PHIplus,Gplus,Gminus,Hplus,Hminus
-        DOUBLE COMPLEX,DIMENSION(3*length,ModesPerProc)::TempData
         REAL(KIND=dp)::delPolMode
         INTEGER::ModeNumber,ll
 
@@ -43,8 +42,11 @@ CONTAINS
         ! Looping over the various modes !
         ! ------------------------------ !
 
-
-        ll = 0
+        !$OMP PARALLEL DO DEFAULT(none) &
+        !$OMP PRIVATE(ModeNumber, delPolMode, phi, g, h, phiplus, gplus, &
+        !$OMP hplus, phiminus, gminus, hminus, F) &
+        !$OMP SHARED(ModesPerProc, MyRank, df, statevector) &
+        !$OMP SCHEDULE(static)
         DO ModeNumber = 1+ModesPerProc*MyRank,(MyRank+1)*ModesPerProc
 
 
@@ -96,22 +98,14 @@ CONTAINS
 
             CALL alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
 
-            ll = ll+1
-            TempData( :, ll ) = -ci * [ G, H, F ]
+!            ll = ll+1
+            !            TempData( :, ll ) = -ci * [ G, H, F ]
+            df( :, ModeNumber ) = -ci * [ G, H, F ]
 
 
         END DO
-
-
-        CALL MPI_ALLGATHER( TempData,3*length*ModesPerProc,MPI_DOUBLE_COMPLEX,			&
-            df,3*length*ModesPerProc,MPI_DOUBLE_COMPLEX,				&
-            MPI_COMM_WORLD,ierror )
-        !CALL MPI_BARRIER( MPI_COMM_WORLD,ierror )
-
-
+        !$OMP END PARALLEL DO
     END FUNCTION df
 
 
-
-END SUBROUTINE Evolve
 end module evolve_mod
