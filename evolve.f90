@@ -9,15 +9,22 @@ SUBROUTINE Evolve(u0,u1)
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes), INTENT(IN):: u0
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(OUT):: u1
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes):: k1,k2,k3,k4
-
+    integer :: i
 
     k1 = df ( u0 )
     k2 = df ( u0 + dt/2.0_dp*k1 )
     k3 = df ( u0 + dt/2.0_dp*k2 )
     k4 = df ( u0 + dt*k3 )
 
-    u1 = u0 + dt/6.0_dp*( k1 + 2.0_dp*k2 + 2.0_dp*k3 + k4 )
-
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(i) &
+    !$OMP SHARED(u1, u0, k1, k2, k3, k4) &
+    !$OMP SCHEDULE(static)
+    do i = 1, NumModes
+       u1(:, i) = u0(:, i) + dt/6.0_dp*( k1(:, i) + &
+            2.0_dp*(k2(:,i) + k3(:,i)) + k4(:,i) )
+    end do
+    !$OMP END PARALLEL DO
   end SUBROUTINE Evolve
 
 
