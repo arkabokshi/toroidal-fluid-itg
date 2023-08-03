@@ -22,8 +22,14 @@ def objective_function(pol_width: float) -> float:
 
 
 # Read in a path to store all of the output data
-data_path = input("Enter relative path for GPR output storage:")
+data_path = input("Enter relative path for GPR output storage: ")
 Path(data_path).mkdir(parents=True, exist_ok=False)
+
+# Read in a number of iterations
+iterations = input(
+    "Please enter the number of iterations you would like the GPR algorithm to carry out: "
+)
+iterations = int(iterations)
 
 # Create an instance of the simulation class
 simulation = ToroidalFluidITG()
@@ -63,8 +69,8 @@ else:
             [3.5, 0.01, 15.5],
             [5.0, 0.055, 15.5],
             [3.5, 0.1, 15.5],
-            [2.0, 0.055, 30.0],
-            [3.5, 0.055, 15.5],
+            [2.0, 0.055, 15.5],
+            [3.5, 0.055, 30.0],
             [3.5, 0.055, 1.0],
             # 8 Corners
             [2.0, 0.01, 1.0],
@@ -84,10 +90,12 @@ else:
             [2.0, 0.1, 15.5],
             [3.5, 0.1, 30.0],
             [5.0, 0.1, 15.5],
-            [3.5, 0.055, 1.0],
-            [2.0, 0.055, 15.5],
-            [3.5, 0.055, 30.0],
-            [5.0, 0.055, 15.5],
+            [2.0, 0.055, 1.0],
+            [2.0, 0.055, 30.0],
+            [5.0, 0.055, 1.0],
+            [5.0, 0.055, 30.0],
+            # Centre
+            [3.5, 0.055, 15.5],
         ]
     )
     y = empty(len(x))
@@ -100,10 +108,10 @@ else:
         )
         y[j] = objective_function(poloidal_width)
 
-# Define bounds for the optimisation of [ eta_g, epsilon_n ]
+# Define bounds for the optimisation of [ eta_g, epsilon_n, shear ]
 # These are implied in the initial values of x, but need to be in this form,
 # i.e. as tuples, for the GPO class.
-bounds = [(2.0, 5.0), (0.01, 0.1), (1, 30)]  # eta_g, epsilon_n, shear
+bounds = [(2.0, 5.0), (0.01, 0.1), (1, 30)]
 
 # Create an instance of GpOptimiser
 GPO = GpOptimiser(x, y, bounds=bounds, acquisition=UpperConfidenceBound)
@@ -146,7 +154,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         )
 
     # This is where the magic happens...
-    for i in range(74):
+    for i in range(iterations):
         # Request the proposed evaluation
         new_x = GPO.propose_evaluation()
 

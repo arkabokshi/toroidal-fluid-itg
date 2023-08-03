@@ -1,6 +1,7 @@
 """
 Contains classes pertaining to different simulation models.
 """
+import csv
 import math
 import os
 import subprocess
@@ -27,6 +28,13 @@ class ToroidalFluidITG:
         self.input_file_backup = input_file_backup
 
     def run(self, eta_g, epsilon_n, shear, run_path) -> float:
+        """
+        Runs the fluid model simulation.
+
+        :return: \
+            The approximate poloidal width of the final mode.
+            This value will equal 2 * pi if the mode did not converge.
+        """
         self.eta_g = eta_g
         self.epsilon_n = epsilon_n
         self.shear = shear
@@ -47,7 +55,12 @@ class ToroidalFluidITG:
             file_data = file.read()
             self.input_file_backup = file_data
 
-        print(self.eta_g, self.epsilon_n, self.run_path)
+        print("[ ToroidalFluidITG ] set_variables")
+        print("Run path:", self.run_path)
+        print("eta_g:", self.eta_g)
+        print("epsilon_n:", self.epsilon_n)
+        print("shear:", self.shear)
+
         # Replace the target string
         file_data = file_data.replace("%ETA_G%", str(self.eta_g))
         file_data = file_data.replace("%EPSILON_N%", str(self.epsilon_n))
@@ -58,10 +71,11 @@ class ToroidalFluidITG:
         with open("inputdata.f90", "w", encoding="utf-8") as file:
             file.write(file_data)
 
-        with open(f"./{self.run_path}/inputdata.f90", "w", encoding="utf-8") as file:
-            file.write(file_data)
-
     def reset_variables(self) -> None:
+        """
+        Makes a copy of the input data, and resets it to its original state.
+        """
+        subprocess.run(f"cp inputdata.f90 {self.run_path}", shell=True, check=True)
         with open("inputdata.f90", "w", encoding="utf-8") as file:
             file.write(self.input_file_backup)
 
@@ -145,7 +159,7 @@ class ToroidalFluidITG:
         pol_section_centred = np.roll(pol_section, int(pol_section.size / 2))
         radians = np.linspace(0, 2 * np.pi, pol_section.size)
 
-        peaks, _ = find_peaks(pol_section_centred, prominence=1)
+        peaks, _ = find_peaks(pol_section_centred, height=0.1)
 
         if len(peaks) > 1:
             # Finding more than one peak is an indication of an unconverged mode.
@@ -164,10 +178,10 @@ class ToroidalFluidITG:
             file.write(
                 "\n".join(
                     [
-                        str(fwhm),
-                        f"{is_anomalous}",
+                        f"Measured FWHM: {fwhm}",
+                        f"is_anomalous: {is_anomalous}",
                         f"Reason: {reason}",
-                        str(penalty_value if is_anomalous else fwhm),
+                        f"Returned value: {penalty_value if is_anomalous else fwhm}",
                     ]
                 )
             )
@@ -204,3 +218,22 @@ class ToroidalFluidITG:
         if is_anomalous:
             print("  -> why?", reason)
         return penalty_value if is_anomalous else fwhm
+
+
+# If running this script directly, load in a dataset, and plot each result.
+if __name__ == "__main__":
+    model = ToroidalFluidITG()
+    with open(
+        "../Data/GPO_100_3D/GPO_results.csv", newline="", encoding="utf-8"
+    ) as csvfile:
+        results = csv.reader(csvfile, delimiter=",")
+        for i, row in enumerate(results):
+            if i == 0:
+                # Don't read the headers.
+                continue
+
+            model.run_path = f"../Data/GPO_100_3D/GPO_{row[0]}"
+            model.eta_g = float(row[1])
+            model.epsilon_n = float(row[2])
+            model.shear = float(row[3])
+            model.get_poloidal_width(True)
