@@ -40,7 +40,7 @@ MODULE inputdata
         dt = 0.1_dp,                                            &    ! Time-step for RK4
         RunTime = 10000.1_dp,                                    &    !
         gammatol = 1e-4_dp,                                     &    ! Code will exit if the average change in gammae is below this value
-        sigmatol = 1e-2_dp,
+        sigmatol = 1e-4_dp,                                     &
         GenIso_Transition = 0.0_dp,                             &    ! Useful for transition studies, eg. Fig 7 in paper
         Init_gammaE = 0.0e-3_dp,                                &    !
         Final_gammaE = 0.0e-3_dp,                               &    !

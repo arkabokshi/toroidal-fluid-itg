@@ -282,11 +282,11 @@ PROGRAM itg
             endtime = TimeStep
             new_gamma = SUM( GlobalGamma(begtime:endtime) ) / navg
             delta_gamma = ABS(new_gamma-old_gamma) / ABS(new_gamma)
-            sigma_gamma = ABS(MAX(GlobalGamma(begtime:endtime) - new_gamma)
+            sigma_gamma = ABS(MAXVAL(GlobalGamma(begtime:endtime) - new_gamma)) / ABS(new_gamma)
             old_gamma = new_gamma
 
             PRINT*, TimeStep*dt,'/',NumSteps*dt
-            PRINT*, delta_gamma, begtime, endtime
+            PRINT*, delta_gamma, begtime, endtime, sigma_gamma
 
             IF ( (delta_gamma.LE.gammatol).AND.(sigma_gamma.LE.sigmatol) ) EXIT
 
