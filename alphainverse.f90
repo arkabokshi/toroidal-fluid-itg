@@ -16,6 +16,7 @@ module alphainverse_mod
      end subroutine zgtsv
   end interface
 
+  double complex, parameter :: zero = 0.0
 contains
 pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
     USE inputdata,&
@@ -26,7 +27,7 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
     REAL(KIND=dp),INTENT(IN)::delPolMode
     DOUBLE COMPLEX,DIMENSION(length),INTENT(IN)::PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus
     DOUBLE COMPLEX,DIMENSION(length),INTENT(OUT)::F
-    DOUBLE COMPLEX,DIMENSION(length)::betaterm,gammaterm,deltaterm,couplingterm,toinvert
+    DOUBLE COMPLEX,DIMENSION(length)::betaterm,gammaterm,deltaterm,couplingterm
 
     INTEGER::info
 
@@ -66,21 +67,18 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
 
 
 ! TO-INVERT
-    toinvert = -(gammaterm + betaterm + deltaterm) + CURV*epsilonn*couplingterm
-
-
+    F = -(gammaterm + betaterm + deltaterm) + CURV*epsilonn*couplingterm
 
 ! INVERTED FIELD Fm
 ! the inverted tridiagonal matrix is calculated once at the beginning
-    toinvert(1)       =   DCMPLX( 0.0_dp,0.0_dp )
-    toinvert(length)  =   DCMPLX( 0.0_dp,0.0_dp )
+    F(1)       =   zero
+    F(length)  =   zero
     !F = MATMUL(inv_tridiag_matrix,toinvert)
 
     lft_diag = low_diag
     rgt_diag = upp_diag
     cen_diag = diagonal
-    CALL ZGTSV( length,1,lft_diag,cen_diag,rgt_diag,toinvert,length,INFO  )
-    F = toinvert
+    CALL ZGTSV( length,1,lft_diag,cen_diag,rgt_diag,F,length,INFO  )
 
   END SUBROUTINE alphainverse
 
