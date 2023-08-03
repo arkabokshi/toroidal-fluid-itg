@@ -23,7 +23,7 @@ def objective_function(pol_width: float) -> float:
 
 # Read in a path to store all of the output data
 data_path = input("Enter relative path for GPR output storage:")
-Path(data_path).mkdir(parents=True, exist_ok=True)
+Path(data_path).mkdir(parents=True, exist_ok=False)
 
 # Create an instance of the simulation class
 simulation = ToroidalFluidITG()
@@ -32,22 +32,26 @@ BASE_RUN_PATH = "GPO_"
 LOAD_DATA = False
 
 if LOAD_DATA:
-    DATA_COUNT = load_data.get_csv_row_count(
-        "../Data/GPO_50_Iterations_Run/GPO_results_appended.csv"
-    )
+    PREVIOUS_RESULTS = "../Data/GPO_100_3D/GPO_results.csv"
+    DATA_COUNT = load_data.get_csv_row_count(PREVIOUS_RESULTS)
 
-    # Initial values, in pairs, for [ eta_g, epsilon_n ]
-    x = empty((DATA_COUNT, 2))
+    # Initial values, in threes, for [ eta_g, epsilon_n, shear ]
+    x = empty((DATA_COUNT, 3))
     y = empty((DATA_COUNT))
 
     (
         previous_eta_g_inputs,
         previous_epsilon_n_inputs,
+        previous_shear_inputs,
         previous_objective_fn_results,
-    ) = load_data.from_csv("../Data/GPO_50_Iterations_Run/GPO_results_appended.csv")
+    ) = load_data.from_csv(PREVIOUS_RESULTS)
 
-    for i, value in enumerate(previous_objective_fn_results):
-        x[i] = [previous_eta_g_inputs[i], previous_epsilon_n_inputs[i]]
+    for i in range(DATA_COUNT):
+        x[i] = [
+            previous_eta_g_inputs[i],
+            previous_epsilon_n_inputs[i],
+            previous_shear_inputs[i],
+        ]
         y[i] = previous_objective_fn_results[i]
 
 else:
@@ -133,7 +137,7 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
         # objective function, so I need to convert them back to FWHM.
         csv_writer.writerow(
             [
-                f"Init {k + 1}",
+                f"init_{k + 1}",
                 str(params[0]),
                 str(params[1]),
                 str(params[2]),

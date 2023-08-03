@@ -58,6 +58,9 @@ class ToroidalFluidITG:
         with open("inputdata.f90", "w", encoding="utf-8") as file:
             file.write(file_data)
 
+        with open(f"./{self.run_path}/inputdata.f90", "w", encoding="utf-8") as file:
+            file.write(file_data)
+
     def reset_variables(self) -> None:
         with open("inputdata.f90", "w", encoding="utf-8") as file:
             file.write(self.input_file_backup)
@@ -136,6 +139,7 @@ class ToroidalFluidITG:
             # An index of 800 would indicate that the peak value occurs in the centre
             # of the poloidal section.
             is_anomalous = False
+            reason = "N/A"
 
         pol_section = potential[max_index[0], :]
         pol_section_centred = np.roll(pol_section, int(pol_section.size / 2))
@@ -157,7 +161,16 @@ class ToroidalFluidITG:
         fwhm = fit.fwhm(popt[2], popt[3])
         # Write out the FWHM
         with open(f"./{self.run_path}/fwhm.txt", "w", encoding="utf-8") as file:
-            file.write(str(fwhm))
+            file.write(
+                "\n".join(
+                    [
+                        str(fwhm),
+                        f"{is_anomalous}",
+                        f"Reason: {reason}",
+                        str(penalty_value if is_anomalous else fwhm),
+                    ]
+                )
+            )
 
         # ------------------------------- #
         # Routine for poloidal width plot #
