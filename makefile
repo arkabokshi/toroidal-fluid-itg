@@ -1,6 +1,7 @@
 CC = gfortran #mpif90
 EXEC = itg
-FLAGS = -O3
+#FLAGS = -O3 - -g -Og -fcheck=all 
+FLAGS =-fdefault-real-8 -fdefault-double-8 -fimplicit-none -O3 -fopenmp # -fcheck=all,no-array-temps -ffpe-trap=invalid,zero -Og -g -Wall -fimplicit-none #-fsanitize=address,undefined -fno-omit-frame-pointer -fimplicit-none
 MAINV2 = inputdata.f90 deriv.f90 alphainverse.f90 evolve.f90 odesolver.f90 itg.f90
 
 LIBS = -llapack -lblas
