@@ -16,7 +16,7 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
     DOUBLE COMPLEX,DIMENSION(length)::betaterm,gammaterm,deltaterm,couplingterm
 
     INTEGER::info
-
+    DOUBLE COMPLEX,DIMENSION(length, 1):: tmp
     DOUBLE COMPLEX,DIMENSION(length)::cen_diag
     DOUBLE COMPLEX,DIMENSION(length-1)::lft_diag,rgt_diag
 
@@ -53,18 +53,19 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
 
 
 ! TO-INVERT
-    F = -(gammaterm + betaterm + deltaterm) + CURV*epsilonn*couplingterm
+    tmp(:,1) = -(gammaterm + betaterm + deltaterm) + CURV*epsilonn*couplingterm
 
 ! INVERTED FIELD Fm
 ! the inverted tridiagonal matrix is calculated once at the beginning
-    F(1)       =   zero
-    F(length)  =   zero
+    tmp(1,1)       =   zero
+    tmp(length,1)  =   zero
     !F = MATMUL(inv_tridiag_matrix,toinvert)
 
     lft_diag = low_diag
     rgt_diag = upp_diag
     cen_diag = diagonal
-    CALL GTSV( length,1,lft_diag,cen_diag,rgt_diag,F,length,INFO  )
+    CALL GTSV( length,1,lft_diag,cen_diag,rgt_diag,tmp,length,INFO  )
+    F = tmp(:, 1)
   END SUBROUTINE alphainverse
 
 ! GAMMA Operator
