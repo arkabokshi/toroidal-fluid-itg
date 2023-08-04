@@ -10,21 +10,30 @@ contains
     DOUBLE COMPLEX,DIMENSION(ArrayLength),INTENT(IN)::InArray
     DOUBLE COMPLEX,DIMENSION(ArrayLength),INTENT(OUT)::OutArray
     INTEGER::ii
-
+    logical,  parameter :: second_order = .true.
 
     IF (Order.EQ.2) THEN
 !!!!!!!!!!!!!!!!!!!!!
 ! SECOND DERIVATIVE !
 !!!!!!!!!!!!!!!!!!!!!
 
-        ii = 1
-        OutArray(ii) = ( InArray(ii+2) - 2.0_dp*InArray(ii+1) + InArray(ii) ) / ( Delh**2 )
+       ii = 1
+       if (second_order) then
+          OutArray(ii) = ( -InArray(ii+3) + 4 * InArray(ii+2) - 5.0_dp*InArray(ii+1) + 2*InArray(ii) ) / ( Delh**2 )
+       else
+          OutArray(ii) = ( InArray(ii+2) - 2.0_dp*InArray(ii+1) + InArray(ii) ) / ( Delh**2 )
+       end if
+
         DO ii=2,ArrayLength-1
             OutArray(ii) = ( InArray(ii+1) - 2.0_dp*InArray(ii) + InArray(ii-1) ) / ( Delh**2 )
         END DO
 
         ii = ArrayLength
-        OutArray(ii) = ( InArray(ii) - 2.0_dp*InArray(ii-1) + InArray(ii-2) ) / ( Delh**2 )
+       if (second_order) then
+          OutArray(ii) = ( -InArray(ii-3) + 4 * InArray(ii-2) - 5.0_dp*InArray(ii-1) + 2*InArray(ii) ) / ( Delh**2 )
+       else
+          OutArray(ii) = ( InArray(ii) - 2.0_dp*InArray(ii-1) + InArray(ii-2) ) / ( Delh**2 )
+       end if
 
 
     ELSE IF (Order.EQ.1) THEN
@@ -33,13 +42,22 @@ contains
 !!!!!!!!!!!!!!!!!!!!
 
         ii = 1
-        OutArray(ii) = ( InArray(ii+1)-InArray(ii) ) / ( Delh )
+        if (second_order) then
+           OutArray(ii) = (-0.5*InArray(ii+2) + 2*InArray(ii+1) - 1.5*InArray(ii))/ Delh
+        else
+           OutArray(ii) = ( InArray(ii+1)-InArray(ii) ) / ( Delh )
+        end if
+
         DO ii=2,ArrayLength-1
             OutArray(ii) = ( InArray(ii+1) - InArray(ii-1) ) / ( 2.0_dp*Delh )
         END DO
 
         ii = ArrayLength
-        OutArray(ii) = ( InArray(ii)-InArray(ii-1) ) / ( Delh )
+        if (second_order) then
+           OutArray(ii) = (-0.5*InArray(ii-2) + 2*InArray(ii-1) - 1.5*InArray(ii))/ Delh
+        else
+           OutArray(ii) = ( InArray(ii)-InArray(ii-1) ) / ( Delh )
+        end if
 
 
     ELSE
