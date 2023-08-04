@@ -140,9 +140,8 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
     IMPLICIT none
         DOUBLE COMPLEX,DIMENSION(length) :: O_couple
         DOUBLE COMPLEX,DIMENSION(length),INTENT(IN)::field_minus,field_plus
-        DOUBLE COMPLEX,DIMENSION(length)::tmp, DField
-        tmp = field_plus - field_minus
-        CALL Deriv( 1, tmp,DField,length )
+        DOUBLE COMPLEX,DIMENSION(length):: DField
+        CALL Deriv( 1, field_plus - field_minus,DField,length )
         O_couple = ( field_plus+field_minus ) + shear*DField
     END FUNCTION O_couple
 
