@@ -1,21 +1,6 @@
 module alphainverse_mod
   use iso_fortran_env, only: real64
 
-  interface gtsv
-     procedure zgtsv
-  end interface gtsv
-
-  interface
-     pure subroutine zgtsv(n, nrhs, dl, d, du, b, ldb, info)
-       import real64
-       integer, intent(in) :: n, nrhs
-       integer, intent(in) :: ldb
-       integer, intent(out) :: info
-       complex(kind=real64), dimension(*), intent(in out) :: dl, d, du
-       complex(kind=real64), dimension(ldb, *), intent(in out) :: b
-     end subroutine zgtsv
-  end interface
-
   double complex, parameter :: zero = 0.0
 contains
 pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
@@ -23,6 +8,7 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
         ONLY:length,eta,sigma,xx,dp,epsilonn,shear,c,CURV,Init_gammaE,  &
         FlowShear,idelta_m,low_diag,diagonal,	&
         upp_diag, TaylorFlow, has_flow
+    use lapack_wrap, only: gtsv
     IMPLICIT NONE
     REAL(KIND=dp),INTENT(IN)::delPolMode
     DOUBLE COMPLEX,DIMENSION(length),INTENT(IN)::PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus
@@ -78,8 +64,7 @@ pure SUBROUTINE alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,
     lft_diag = low_diag
     rgt_diag = upp_diag
     cen_diag = diagonal
-    CALL ZGTSV( length,1,lft_diag,cen_diag,rgt_diag,F,length,INFO  )
-
+    CALL GTSV( length,1,lft_diag,cen_diag,rgt_diag,F,length,INFO  )
   END SUBROUTINE alphainverse
 
 ! GAMMA Operator
