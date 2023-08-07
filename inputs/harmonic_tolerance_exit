@@ -20,14 +20,14 @@ MODULE inputdata
         MajRad = 5.0_dp,                                        &    ! Not used explicitly anywhere in the code
 
         krhoi  =  0.2,                                          &    ! Parameters explained in the paper Bokshi PPCF 2016
-        shear  =  %SHEAR%_dp,                                   &    ! [1,30]
+        shear  =  25.0_dp,                                   &    ! [1,30]
         CURV   =  1.0_dp,                                       &
-        etag   =  %ETA_G%_dp,                                   &    ! [2,5]
+        etag   =  1.16841088879567_dp,                                   &    ! [2,5]
         qedge  =  3.45_dp,                                      &    !
 
         etac  =  1062.5_dp,                                     &    !
         tau   =  1.0_dp,                                        &    !
-        epsilonn  = %EPSILON_N%_dp,                             &    ! [0.01,0.02,0.03,0.04,0.08]
+        epsilonn  = 0.049739742362262_dp,                             &    ! [0.01,0.02,0.03,0.04,0.08]
         delta_m   = 0.0_dp,                                     &    ! I don't think this is used anywhere...
 
         b = krhoi**2,                                           &    !
@@ -38,7 +38,7 @@ MODULE inputdata
         nqp = ktheta * shear,                                   &    !
 
         dt = 0.1_dp,                                            &    ! Time-step for RK4
-        RunTime = 2000.1_dp,                                    &    !
+        RunTime = 10000.1_dp,                                    &    !
         gammatol = 1e-4_dp,                                     &    ! Code will exit if the average change in gammae is below this value
         sigmatol = 1e-4_dp,                                     &
         GenIso_Transition = 0.0_dp,                             &    ! Useful for transition studies, eg. Fig 7 in paper
@@ -85,7 +85,7 @@ MODULE inputdata
         noiseStart = .false.,                                   &    !
         calcThetaMaxima = .false.                                    !
 
-    CHARACTER(20) :: runpath = '%RUN_PATH%'                         ! The name of the path for file I/O.
+    CHARACTER(20) :: runpath = 'fig_35'                         ! The name of the path for file I/O.
 
 END MODULE inputdata
 

@@ -4,7 +4,7 @@ PROGRAM itg
         eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,        &
         MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,                &
         ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta, &
-        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath
+        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath, sigmatol
     IMPLICIT NONE
     INCLUDE 'mpif.h'
     EXTERNAL Evolve,OdeSolver
@@ -26,7 +26,7 @@ PROGRAM itg
     DOUBLE PRECISION, PARAMETER           ::   pi = ATAN(1.0_dp) * 4.0_dp
     DOUBLE COMPLEX, DIMENSION(length)     ::   ComplexPotential
     REAL(KIND=dp), DIMENSION( length)     ::   ureal, uimag
-    REAL(KIND=dp)                         ::   old_gamma, new_gamma, delta_gamma
+    REAL(KIND=dp)                         ::   old_gamma, new_gamma, delta_gamma, sigma_gamma
 
 
 ! ---------------- !
@@ -282,12 +282,13 @@ PROGRAM itg
             endtime = TimeStep
             new_gamma = SUM( GlobalGamma(begtime:endtime) ) / navg
             delta_gamma = ABS(new_gamma-old_gamma) / ABS(new_gamma)
+            sigma_gamma = MAXVAL(ABS(GlobalGamma(begtime:endtime) - new_gamma)) / ABS(new_gamma)
             old_gamma = new_gamma
 
             PRINT*, TimeStep*dt,'/',NumSteps*dt
-            PRINT*, delta_gamma, begtime, endtime
+            PRINT*, delta_gamma, begtime, endtime, sigma_gamma
 
-            IF (delta_gamma .LE. gammatol) EXIT
+            IF ( (delta_gamma.LE.gammatol).AND.(sigma_gamma.LE.sigmatol) ) EXIT
 
         END IF
 
