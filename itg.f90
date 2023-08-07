@@ -93,7 +93,7 @@ PROGRAM itg
 
     delx = xx(2)-xx(1)
 
-    CALL odesolver( length,delx,ax,bx,cx )
+    CALL odesolver( length,delx,ax,bx,cx,low_diag,diagonal,upp_diag)
 
 
 ! ---------------------------------- !
