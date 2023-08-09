@@ -4,7 +4,7 @@ PROGRAM itg
         eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,        &
         MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,                &
         ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta, &
-        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath, has_flow
+        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath, has_flow, low_diag,diagonal,upp_diag
     use evolve_mod, only: evolve
     use odesolver_mod, only: odesolver
     IMPLICIT NONE
