@@ -68,7 +68,7 @@ MODULE inputdata
 
     REAL(KIND=dp),DIMENSION(length) :: FlowShear = (Init_gammaE*xx) + (Quad_gammaE*(xx**2)), &
         eta   ! Defined in itg.f90 - as are other parameters not defined here
-
+    logical :: has_flow = .true.
     DOUBLE COMPLEX,PARAMETER :: ci = DCMPLX( 0.0_dp,1.0_dp ), &     !
         idelta_m = DCMPLX( 0.0_dp,delta_m )                          !
 

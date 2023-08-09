@@ -1,25 +1,31 @@
+module evolve_mod
+  contains
 SUBROUTINE Evolve(u0,u1)
     USE inputdata,&
         ONLY:length,dp,dt,NumModes,InitialMode,m0,xx,FlowShear,ci,FlowOnOff,	&
         MyRank,MySize,ierror,ModesPerProc
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
-    EXTERNAL alphainverse
+
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes), INTENT(IN):: u0
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(OUT):: u1
     DOUBLE COMPLEX,DIMENSION(3*length,NumModes):: k1,k2,k3,k4
-
+    integer :: i
 
     k1 = df ( u0 )
     k2 = df ( u0 + dt/2.0_dp*k1 )
     k3 = df ( u0 + dt/2.0_dp*k2 )
     k4 = df ( u0 + dt*k3 )
 
-    u1 = u0 + dt/6.0_dp*( k1 + 2.0_dp*k2 + 2.0_dp*k3 + k4 )
-
-
-
-CONTAINS
+    !$OMP PARALLEL DO DEFAULT(none) &
+    !$OMP PRIVATE(i) &
+    !$OMP SHARED(u1, u0, k1, k2, k3, k4) &
+    !$OMP SCHEDULE(static)
+    do i = 1, NumModes
+       u1(:, i) = u0(:, i) + dt/6.0_dp*( k1(:, i) + &
+            2.0_dp*(k2(:,i) + k3(:,i)) + k4(:,i) )
+    end do
+    !$OMP END PARALLEL DO
+  end SUBROUTINE Evolve
 
 
     ! ------------------------------------ !
@@ -27,29 +33,39 @@ CONTAINS
     ! ------------------------------------ !
 
     FUNCTION df(statevector)
+    use alphainverse_mod, only: alphainverse
+    USE inputdata,&
+        ONLY:length,dp,dt,NumModes,InitialMode,m0,xx,FlowShear,ci,FlowOnOff,	&
+        MyRank,MySize,ierror,ModesPerProc
         IMPLICIT NONE
         DOUBLE COMPLEX,DIMENSION(3*length,NumModes)::df
         DOUBLE COMPLEX,DIMENSION(3*length,NumModes),INTENT(IN)::statevector
         DOUBLE COMPLEX,DIMENSION(length)::PHI,G,H,F,PHIminus,PHIplus,Gplus,Gminus,Hplus,Hminus
-        DOUBLE COMPLEX,DIMENSION(3*length,ModesPerProc)::TempData
         REAL(KIND=dp)::delPolMode
-        INTEGER::ModeNumber,ll
-
+        INTEGER::ModeNumber
+        integer :: phi_start, phi_end, g_start, g_end, h_start, h_end
+        phi_start = 1 ; phi_end = phi_start + length - 1
+        g_start = phi_end + 1 ; g_end = g_start + length - 1
+        h_start = g_end + 1 ; h_end = h_start + length - 1
 
         ! ------------------------------ !
         ! Looping over the various modes !
         ! ------------------------------ !
 
-
-        ll = 0
-        DO ModeNumber = 1+ModesPerProc*MyRank,(MyRank+1)*ModesPerProc
+        !$OMP PARALLEL DO DEFAULT(none) &
+        !$OMP PRIVATE(ModeNumber, delPolMode, phi, g, h, phiplus, gplus, &
+        !$OMP hplus, phiminus, gminus, hminus, F) &
+        !$OMP SHARED(df, statevector, phi_start, phi_end, g_start, g_end, &
+        !$OMP h_start, h_end) &
+        !$OMP SCHEDULE(static)
+        DO ModeNumber = 1, NumModes
 
 
             delPolMode = DBLE( InitialMode-m0-1+ModeNumber )
 
-            PHI  =  statevector( 0*length+1:1*length , ModeNumber )
-            G    =  statevector( 1*length+1:2*length , ModeNumber )
-            H    =  statevector( 2*length+1:3*length , ModeNumber )
+            PHI  =  statevector( phi_start:phi_end , ModeNumber )
+            G    =  statevector( g_start:g_end , ModeNumber )
+            H    =  statevector( h_start:h_end , ModeNumber )
 
 
             ! ------------------ !
@@ -58,9 +74,9 @@ CONTAINS
 
             IF (ModeNumber.EQ.1) THEN
 
-                PHIplus  =   statevector( 0*length+1:1*length , ModeNumber+1 )
-                Gplus    =   statevector( 1*length+1:2*length , ModeNumber+1 )
-                Hplus    =   statevector( 2*length+1:3*length , ModeNumber+1 )
+                PHIplus  =   statevector( phi_start:phi_end , ModeNumber+1 )
+                Gplus    =   statevector( g_start:g_end , ModeNumber+1 )
+                Hplus    =   statevector( h_start:h_end , ModeNumber+1 )
                 PHIminus =   0.0_dp
                 Gminus   =   0.0_dp
                 Hminus   =   0.0_dp
@@ -70,21 +86,20 @@ CONTAINS
                 PHIplus  =   0.0_dp
                 Gplus    =   0.0_dp
                 Hplus    =   0.0_dp
-                PHIminus =   statevector( 0*length+1:1*length , NumModes-1 )
-                Gminus   =   statevector( 1*length+1:2*length , NumModes-1 )
-                Hminus   =   statevector( 2*length+1:3*length , NumModes-1 )
+                PHIminus =   statevector( phi_start:phi_end , NumModes-1 )
+                Gminus   =   statevector( g_start:g_end , NumModes-1 )
+                Hminus   =   statevector( h_start:h_end , NumModes-1 )
 
             ELSE
 
-                PHIplus  =   statevector( 0*length+1:1*length , ModeNumber+1 )
-                PHIminus =   statevector( 0*length+1:1*length , ModeNumber-1 )
-                Gplus    =   statevector( 1*length+1:2*length , ModeNumber+1 )
-                Gminus   =   statevector( 1*length+1:2*length , ModeNumber-1 )
-                Hplus    =   statevector( 2*length+1:3*length , ModeNumber+1 )
-                Hminus   =   statevector( 2*length+1:3*length , ModeNumber-1 )
+                PHIplus  =   statevector( phi_start:phi_end , ModeNumber+1 )
+                PHIminus =   statevector( phi_start:phi_end , ModeNumber-1 )
+                Gplus    =   statevector( g_start:g_end , ModeNumber+1 )
+                Gminus   =   statevector( g_start:g_end , ModeNumber-1 )
+                Hplus    =   statevector( h_start:h_end , ModeNumber+1 )
+                Hminus   =   statevector( h_start:h_end , ModeNumber-1 )
 
             END IF
-
 
             ! --------------------------- !
             ! Constructing F by inversion !
@@ -93,21 +108,13 @@ CONTAINS
 
             CALL alphainverse(PHIminus,PHI,PHIplus,Gminus,G,Gplus,Hminus,H,Hplus,delPolMode,F)
 
-            ll = ll+1
-            TempData( :, ll ) = -ci * [ G, H, F ]
-
+            df( phi_start:phi_end, ModeNumber ) = -ci * G
+            df( g_start:g_end, ModeNumber) = -ci * H
+            df( h_start:h_end, ModeNumber) = -ci * F
 
         END DO
-
-
-        CALL MPI_ALLGATHER( TempData,3*length*ModesPerProc,MPI_DOUBLE_COMPLEX,			&
-            df,3*length*ModesPerProc,MPI_DOUBLE_COMPLEX,				&
-            MPI_COMM_WORLD,ierror )
-        !CALL MPI_BARRIER( MPI_COMM_WORLD,ierror )
-
-
+        !$OMP END PARALLEL DO
     END FUNCTION df
 
 
-
-END SUBROUTINE Evolve
+end module evolve_mod

@@ -4,21 +4,19 @@ PROGRAM itg
         eta,qprofile,sigma,tau,c,shear,PtDensity,x0,FlowShear,ShearingRate,dGammaE_dt,restart,        &
         MyRank,MySize,ierror,NumModes_by_2,ModesPerProc,nqp,rs,ktheta,NumSteps,MinRad,                &
         ci,DelPrint,FlowOnOff,Init_gammaE,Final_gammaE,idelta_m, etag, etac, m0, n0, qedge, NumTheta, &
-        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath
+        Quad_gammaE, TaylorFlow, noiseStart, calcThetaMaxima, gammatol, navg, runpath, has_flow, low_diag,diagonal,upp_diag
+    use evolve_mod, only: evolve
+    use odesolver_mod, only: odesolver
     IMPLICIT NONE
-    INCLUDE 'mpif.h'
-    EXTERNAL Evolve,OdeSolver
-
     DOUBLE COMPLEX, DIMENSION( 3*length,NumModes ) ::   u1 = 0.0_dp, u0 = 0.0_dp
     DOUBLE COMPLEX, DIMENSION( NumSteps,NumModes ) ::   Omega_t  = 0.0_dp
-    DOUBLE COMPLEX, DIMENSION( NumSteps )          ::   PolPot   = 0.0_dp
     DOUBLE PRECISION,DIMENSION(NumSteps )          ::   GlobalGamma = 0.0, GlobalOmega = 0.0, ThetaMaxima = 0.0
     DOUBLE COMPLEX, DIMENSION( length )            ::   ax,bx,cx
     REAL(KIND=dp) , DIMENSION( NumSteps )          ::   gammaE_t = -1.0_dp
     DOUBLE COMPLEX                                 ::   Omega_0
 
-    INTEGER           :: TimeStep,mode,q_m,NumFiles,ii,jj,mm,MaxTheta,begtime,endtime
-    REAL(KIND=dp)     ::   mu,delm,delx,t0,t1,Amp,tt,wm,gm,RealMax,ImagMax
+    INTEGER           :: TimeStep,mode,q_m,NumFiles,jj,mm,begtime,endtime
+    REAL(KIND=dp)     ::   mu,delm,delx,t0,t1,Amp,RealMax,ImagMax
     CHARACTER(LEN=20) ::   t
 
     DOUBLE PRECISION                      ::   ABS_PHIm_t0, ABS_PHIm_t1, ABS_Gm_t1, theta
@@ -32,26 +30,14 @@ PROGRAM itg
 ! ---------------- !
 ! Initialising MPI !
 ! ---------------- !
-
-    CALL MPI_INIT( ierror )
-    CALL MPI_COMM_SIZE( MPI_COMM_WORLD,MySize,ierror )
-    CALL MPI_COMM_RANK( MPI_COMM_WORLD,MyRank,ierror )
-
-
-    ModesPerProc = NumModes / MySize
-
-    IF (MOD(NumModes,MySize).NE.0) THEN
-        PRINT*, 'EXITING: Number of processors should exactly divide number of modes'
-        CALL EXIT()
-    END IF
-
-
+    ModesPerProc = NumModes
+    MyRank = 0
 !--------------------!
 ! Setting parameters !
 !--------------------!
 
     eta = etag * ( 1.0_dp - etac * (xx/nqp)**2 )
-
+    has_flow = maxval(abs(FlowShear)) > 0.0
 !--------------------------!
 ! Create runpath directory !
 !--------------------------!
@@ -107,7 +93,7 @@ PROGRAM itg
 
     delx = xx(2)-xx(1)
 
-    CALL odesolver( length,delx,ax,bx,cx )
+    CALL odesolver( length,delx,ax,bx,cx,low_diag,diagonal,upp_diag)
 
 
 ! ---------------------------------- !
@@ -142,7 +128,6 @@ PROGRAM itg
 
     old_gamma = -1.0
     NumFiles = 1
-    t0 = MPI_WTIME()
 
     DO  TimeStep = 1,NumSteps
 
@@ -158,8 +143,7 @@ PROGRAM itg
         !    IF (ShearingRate.GE.Final_gammaE) ShearingRate = Final_gammaE
         !  END IF
 
-        !  ShearingRate = Init_gammaE
-        !  gammaE_t(TimeStep) = ShearingRate
+        !          !  gammaE_t(TimeStep) = ShearingRate
 
         !IF ( TimeStep*dt.LT.GenIso_Transition ) THEN
         !         FlowShear = Init_gammaE * xx
@@ -273,8 +257,6 @@ PROGRAM itg
         u0 = u1 / MAX(RealMax,ImagMax)
 
 
-        CALL MPI_BARRIER(MPI_COMM_WORLD,ierror)
-
         IF (MOD(TimeStep,navg).EQ.0) THEN
 
             ! take mean over window with width navg
@@ -343,12 +325,6 @@ PROGRAM itg
 ! ------------ !
 ! Finalize MPI !
 ! ------------ !
-
-    t1 = MPI_WTIME()
-    IF (MyRank.EQ.0) PRINT*, 'Run-time(s):',t1-t0
-
-    CALL MPI_FINALIZE( ierror )
-
 
 
 END PROGRAM itg
