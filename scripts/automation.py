@@ -35,10 +35,11 @@ iterations = int(iterations)
 simulation = ToroidalFluidITG()
 BASE_RUN_PATH = "GPO_"
 
-LOAD_DATA = False
+LOAD_DATA = True
+SAVE_DISK_SPACE = True
 
 if LOAD_DATA:
-    PREVIOUS_RESULTS = "../Data/GPO_100_3D/GPO_results.csv"
+    PREVIOUS_RESULTS = "../Data/GPO_results_reset.csv"
     DATA_COUNT = load_data.get_csv_row_count(PREVIOUS_RESULTS)
 
     # Initial values, in threes, for [ eta_g, epsilon_n, shear ]
@@ -183,6 +184,14 @@ with open("GPO_results.csv", "w", newline="", encoding="utf-8") as outcsv:
                 str(poloidal_width),
             ]
         )
+
+        if SAVE_DISK_SPACE:
+            # Remove all uneccessary data to save on storage space
+            FOLDER_PATH = f"./{run_path}"
+            DATA = f"{FOLDER_PATH}/*.dat"
+            PARAMS = f"{FOLDER_PATH}/parameters.txt"
+            VIDEO = f"{FOLDER_PATH}/videoparam.txt"
+            subprocess.run(f"rm -rf {DATA} {PARAMS} {VIDEO}", shell=True, check=True)
 
 # Write out all data for easy loading in the gpo_plot.py script
 with open("means.npy", "wb") as f:
