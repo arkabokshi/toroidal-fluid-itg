@@ -168,11 +168,20 @@ class ToroidalFluidITG:
 
         # Guess is an array containing [y_0, A, x_0, c]
         gaussian_guess = [0.0, np.amax(pol_section_centred), np.pi, np.pi / 2]
-        # pylint: disable=unbalanced-tuple-unpacking
-        popt, pcov = curve_fit(
-            fit.gaussian, radians, pol_section_centred, p0=gaussian_guess
-        )
-        fwhm = fit.fwhm(popt[2], popt[3])
+        try:
+            # pylint: disable=unbalanced-tuple-unpacking
+            popt, pcov = curve_fit(
+                fit.gaussian, radians, pol_section_centred, p0=gaussian_guess
+            )
+            fwhm = fit.fwhm(popt[2], popt[3])
+        except RuntimeError:
+            print(
+                "scipy.curve_fit encountered a runtime error, assigning penalty value."
+            )
+            is_anomalous = True
+            reason += " + curve_fit failed to fit a Gaussian"
+            fwhm = None
+
         # Write out the FWHM
         with open(f"./{self.run_path}/fwhm.txt", "w", encoding="utf-8") as file:
             file.write(
@@ -191,14 +200,17 @@ class ToroidalFluidITG:
         # ------------------------------- #
 
         if plot:
-            # Generate the fit using the newly fitted guess parameters
-            gaussian_fit = fit.gaussian(radians, *popt)
-
             # Plot the simulation data
             plt.plot(radians, pol_section_centred, label="toroidal-fluid-itg")
 
-            # Plot the Gaussian fit
-            plt.plot(radians, gaussian_fit, lw=2, label="Gaussian Fit")
+            try:
+                # Generate the fit using the newly fitted guess parameters
+                gaussian_fit = fit.gaussian(radians, *popt)
+                # Plot the Gaussian fit
+                plt.plot(radians, gaussian_fit, lw=2, label="Gaussian Fit")
+            except NameError:
+                # Could occur if scipy.curve_fit fails to return popt
+                print("Unable to plot Gaussian curve")
 
             # Set x-ticks to be from 0 -> 2 * pi
             tick_pos = [0, np.pi, 2 * np.pi]
